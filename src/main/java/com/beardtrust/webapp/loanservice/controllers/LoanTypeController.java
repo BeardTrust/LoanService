@@ -30,4 +30,10 @@ public class LoanTypeController {
     public List<LoanTypeEntity> getAllLoanTypes(){
         return loanTypeService.getAll();
     }
+
+    @PutMapping()
+    @PreAuthorize("permitAll()")
+    public void updateLoanType(@RequestBody LoanTypeEntity loanType){
+        loanTypeService.save(loanType);
+    }
 }
