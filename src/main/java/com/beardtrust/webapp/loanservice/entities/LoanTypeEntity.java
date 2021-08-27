@@ -5,7 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="loan_types")
+@Table(name="loanTypes")
 public class LoanTypeEntity {
 
     @Id

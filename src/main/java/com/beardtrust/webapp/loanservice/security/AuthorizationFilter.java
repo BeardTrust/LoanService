@@ -1,7 +1,7 @@
 package com.beardtrust.webapp.loanservice.security;
 
-import com.beardtrust.webapp.cardservice.dtos.UserDTO;
-import com.beardtrust.webapp.cardservice.services.AuthorizationService;
+import com.beardtrust.webapp.loanservice.dtos.UserDTO;
+import com.beardtrust.webapp.loanservice.services.AuthorizationService;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;

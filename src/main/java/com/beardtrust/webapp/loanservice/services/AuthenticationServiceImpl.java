@@ -1,6 +1,7 @@
 package com.beardtrust.webapp.loanservice.services;
 
-import com.beardtrust.loanservice.dtos.UserDTO;
+import com.beardtrust.webapp.loanservice.services.AuthenticationService;
+import com.beardtrust.webapp.loanservice.dtos.UserDTO;
 import com.beardtrust.webapp.loanservice.entities.UserEntity;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import lombok.extern.slf4j.Slf4j;
