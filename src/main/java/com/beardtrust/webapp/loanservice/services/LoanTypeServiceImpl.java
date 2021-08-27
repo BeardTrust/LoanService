@@ -25,4 +25,9 @@ public class LoanTypeServiceImpl implements LoanTypeService{
         return loanTypeRepo.findAll();
     }
 
+    @Override
+    public void deactivate(LoanTypeEntity loanType){
+        loanTypeRepo.deactivateById(loanType.getId());
+    }
+
 }

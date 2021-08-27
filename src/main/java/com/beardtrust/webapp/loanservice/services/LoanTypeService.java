@@ -9,4 +9,6 @@ public interface LoanTypeService {
     public void save(LoanTypeEntity loanType);
 
     public List<LoanTypeEntity> getAll();
+
+    public void deactivate(LoanTypeEntity loanType);
 }

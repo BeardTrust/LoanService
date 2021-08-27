@@ -36,4 +36,10 @@ public class LoanTypeController {
     public void updateLoanType(@RequestBody LoanTypeEntity loanType){
         loanTypeService.save(loanType);
     }
+
+    @DeleteMapping()
+    @PreAuthorize("permitAll()")
+    public void deactivateLoanType(@RequestBody LoanTypeEntity loanType){
+        loanTypeService.deactivate(loanType);
+    }
 }
