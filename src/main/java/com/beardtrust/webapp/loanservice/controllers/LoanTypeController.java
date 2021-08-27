@@ -1,4 +1,4 @@
-package LoanService.src.main.java.com.beardtrust.webapp.loanservice.controllers;
+package com.beardtrust.webapp.loanservice.controllers;
 
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.services.LoanTypeService;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/loantypes/")
+@RequestMapping("/loantypes")
 public class LoanTypeController {
 
     LoanTypeService loanTypeService;
@@ -22,6 +22,7 @@ public class LoanTypeController {
     @PostMapping()
     @PreAuthorize("permitAll()")
     public void createLoanType(@RequestBody LoanTypeEntity loanType){
+        System.out.println("inbound loan type: " + loanType);
         loanTypeService.save(loanType);
     }
 

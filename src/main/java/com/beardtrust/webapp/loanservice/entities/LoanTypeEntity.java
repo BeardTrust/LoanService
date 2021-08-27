@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.entities;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -14,6 +15,7 @@ public class LoanTypeEntity {
     private String description;
     private Double apr;
     private Integer numMonths;
+    @Column(name = "available")
     private Boolean isAvailable;
 
     public LoanTypeEntity() {

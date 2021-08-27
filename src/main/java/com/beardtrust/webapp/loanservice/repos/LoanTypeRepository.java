@@ -12,10 +12,10 @@ import java.util.List;
 public interface LoanTypeRepository extends JpaRepository<LoanTypeEntity, String> {
 
     @Modifying
-    @Query(value = "update loan_types set isAvailable=false where id=?1", nativeQuery = true)
-    void deactivateById(String cardId);
+    @Query(value = "update loan_types set available=false where id=?1", nativeQuery = true)
+    void deactivateById(String id);
 
     @Override
-    @Query(value = "select * from loan_types where isAvailable=true", nativeQuery = true)
+//    @Query(value = "select * from loan_types where available=true", nativeQuery = true)
     List<LoanTypeEntity> findAll();
 }

@@ -25,7 +25,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
-    public Page<LoanEntity> getAllLoans(Integer n, Integer s, String sortName, String sortDir, String search) {
+    public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search) {
         List<Sort.Order> orders = new ArrayList();
         orders.add(new Sort.Order(getDirection(sortDir), sortName));
         System.out.println("Inbound sort: " + sortName + " " + sortDir);
@@ -46,6 +46,10 @@ public class LoanServiceImpl implements LoanService {
 //            }
 //        }
         return repo.findAll(page);
+    }
+    
+    public List<LoanEntity> getAllLoans() {
+        return repo.findAll();
     }
 
     public Sort.Direction getDirection(String dir) {

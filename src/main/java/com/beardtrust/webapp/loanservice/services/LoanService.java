@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 public interface LoanService {
 	
-	public Page<LoanEntity> getAllLoans(Integer n, Integer s, String sortName, String sortDir, String search);
+	public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search);
+        
+        public List<LoanEntity> getAllLoans();
 	
 	public LoanEntity getById(String id);
 	

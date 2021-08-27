@@ -2,6 +2,7 @@ package com.beardtrust.webapp.loanservice.controllers;
 
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.services.LoanService;
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import org.springframework.data.domain.Page;
@@ -31,16 +32,24 @@ public class LoanController {
 
     @PreAuthorize("permitAll()")
     @PostMapping()
-    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+//    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+//    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<LoanEntity> createLoan(@RequestBody LoanEntity loan) {
+        System.out.println("Attempting to post, rcvd: " + loan);
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
 		return response;
     }
 
     @GetMapping
-    public ResponseEntity<Page<LoanEntity>> getAllLoans(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
-        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoans(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
+    public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
+        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
+        return response;
+
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<LoanEntity>> getAllLoans() {//<-- Admin calls full list
+        ResponseEntity<List<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoans(), HttpStatus.OK);
         return response;
 
     }

@@ -18,7 +18,7 @@ public class LoanEntity {
     private final String loanId;
     private String userId;
     @ManyToOne
-    private LoanTypeEntity loanTypeId;
+    private LoanTypeEntity loanType;
     @Embedded
     private Balance balance;
     private LocalDate createDate;
@@ -42,11 +42,11 @@ public class LoanEntity {
     }
 
     public LoanTypeEntity getLoanType() {
-        return loanTypeId;
+        return loanType;
     }
 
-    public void setLoanType(LoanTypeEntity loanTypeId) {
-        this.loanTypeId = loanTypeId;
+    public void setLoanType(LoanTypeEntity loanType) {
+        this.loanType = loanType;
     }
 
     public Balance getBalance() {
