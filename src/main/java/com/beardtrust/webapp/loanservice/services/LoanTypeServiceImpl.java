@@ -17,4 +17,10 @@ public class LoanTypeServiceImpl implements LoanTypeService{
     public void save(LoanTypeEntity loanType){
         loanTypeRepo.save(loanType);
     }
+
+    @Override
+    public List<LoanTypeEntity> getAll() {
+        return loanTypeRepo.findAll();
+    }
+
 }

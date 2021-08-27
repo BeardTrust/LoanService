@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/loantypes/")
 public class LoanTypeController {
 
+    LoanTypeService loanTypeService;
+
     @Autowired
-    private final LoanTypeService loanTypeService;
+    public LoanTypeController(LoanTypeService loanTypeService) {
+        this.loanTypeService = loanTypeService;
+    }
 
     @PostMapping()
     @PreAuthorize("permitAll()")
@@ -22,4 +26,9 @@ public class LoanTypeController {
         loanTypeService.save(loanType);
     }
 
+    @GetMapping()
+    @PreAuthorize("permitAll()")
+    public List<LoanTypeEntity> getAllLoanTypes(){
+        return loanTypeService.getAll();
+    }
 }
