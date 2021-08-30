@@ -20,4 +20,11 @@ public interface LoanTypeRepository extends JpaRepository<LoanTypeEntity, String
     @Override
 //    @Query(value = "select * from loan_types where available=true", nativeQuery = true)
     List<LoanTypeEntity> findAll();
+
+    public Page<LoanTypeEntity> findAllBy(Pageable page);
+
+    public Page<LoanTypeEntity> findAllByIdOrTypeNameContainsIgnoreCaseAndIsAvailableOrDescriptionContainsIgnoreCase(
+            String searchId, String searchTypeName, boolean searchAvailable, String searchDescription, Pageable page);
+
+    public Page<LoanTypeEntity> findAllByAprOrNumMonths(Integer newSearch, Integer newSearch0, Pageable page);
 }

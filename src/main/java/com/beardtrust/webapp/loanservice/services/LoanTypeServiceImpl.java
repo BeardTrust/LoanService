@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.services;
 
+import com.beardtrust.webapp.loanservice.entities.Balance;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import static org.apache.commons.lang.NumberUtils.isNumber;
+import org.apache.commons.validator.GenericValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,18 +44,16 @@ public class LoanTypeServiceImpl implements LoanTypeService{
         Pageable page = PageRequest.of(pageNum, pageSize, Sort.by(orders));
         System.out.println("Compiled page: " + page);
         System.out.println("Search param: " + search);
-//        if (!("").equals(search)) {
-//            if (isNumber(search)) {
-//                System.out.println("search was a number");
-//                Balance searchBalance = parseBalance(search);
-//                return repo.findAllByPrincipalOrPayDayOrBalance_ValueIsLike(Integer.parseInt(search), searchBalance, page);
-//            } else if (GenericValidator.isDate(search, "yyyy-MM", false)) {
-//                System.out.println("search was a date");
-//                return repo.findByCreateDate(LocalDate.parse(search), page);
-//            } else {
-//                return repo.findAllByLoanType_TypeNameIgnoreCase(search, page);
-//            }
-//        }
+        if (!("").equals(search)) {
+            if (isNumber(search)) {
+                System.out.println("search was a number");
+                Integer newSearch = Integer.parseInt(search);
+                return repo.findAllByAprOrNumMonths(newSearch, newSearch, page);
+            }else {
+                return repo.findAllByIdOrTypeNameContainsIgnoreCaseAndIsAvailableOrDescriptionContainsIgnoreCase(
+                        search, search, Boolean.valueOf(search), search, page);
+            }
+        }
         return repo.findAll(page);
     }
     

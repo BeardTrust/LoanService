@@ -15,8 +15,7 @@ public class LoanTypeEntity {
     private String description;
     private Double apr;
     private Integer numMonths;
-    @Column(name = "available")
-    private Boolean isAvailable;
+    private boolean isAvailable;
 
     public LoanTypeEntity() {
         super();
@@ -70,12 +69,12 @@ public class LoanTypeEntity {
         this.numMonths = numMonths;
     }
 
-    public Boolean getAvailable() {
+    public Boolean getIsAvailable() {
         return isAvailable;
     }
 
-    public void setAvailable(Boolean available) {
-        isAvailable = available;
+    public void setIsAvailable(Boolean isAvailable) {
+        this.isAvailable = isAvailable;
     }
 
     @Override

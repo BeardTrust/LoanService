@@ -38,8 +38,9 @@ public class LoanTypeController {
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
             @RequestParam(name = "size", defaultValue = "10") int pageSize,
             @RequestParam(name = "sortBy", defaultValue = "loanId,asc") String[] sortBy,
-            @RequestParam(name = "search", required = false) String search) 
+            @RequestParam(name = "search", defaultValue = "") String search) 
         {
+            System.out.println("inbound parameters: pagenum " + pageNumber + ", pagesize: " + pageSize + ", sortby: " + sortBy.toString() + ", search: " + search);
         Pageable page = PageRequest.of(pageNumber, pageSize);
         ResponseEntity<Page<LoanTypeEntity>> response = new ResponseEntity<>(loanTypeService.getAllLoanTypesPage(pageNumber, pageSize, sortBy, search), HttpStatus.OK);
         return response;
