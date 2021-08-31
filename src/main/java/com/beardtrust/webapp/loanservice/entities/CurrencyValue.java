@@ -14,7 +14,7 @@ import java.util.Objects;
  * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
  */
 @Embeddable
-public class CurrencyValue implements Serializable {
+public class CurrencyValue implements Serializable, Comparable<CurrencyValue> {
 	private static final long serialVersionUID = -7883135732977736303L;
 
 	@NotNull(message = "Negative value indicator cannot be null")
@@ -261,5 +261,26 @@ public class CurrencyValue implements Serializable {
 	@Override
 	public String toString() {
 		return (((this.isNegative) ? "-" : "") + "$" + this.dollars + "." + ((this.cents < 10) ? "0" : "") + this.cents);
+	}
+
+	@Override
+	public int compareTo(CurrencyValue o) {
+		int returnValue = 0;
+
+		if (this.isNegative() == o.isNegative()) {
+			if (this.getDollars() != o.getDollars()) {
+				returnValue = this.getDollars() > o.getDollars() ? 1 : -1;
+			} else {
+				returnValue = this.getCents() > o.getCents() ? 1 : -1;
+			}
+
+			if (this.isNegative()) {
+				returnValue *= -1;
+			}
+		} else {
+			returnValue = this.isNegative() ? -1 : 1;
+		}
+
+		return returnValue;
 	}
 }
