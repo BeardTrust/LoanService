@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.controllers;
 
+import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.services.LoanTypeService;
 import java.util.ArrayList;
@@ -33,6 +34,14 @@ public class LoanTypeController {
         loanTypeService.save(loanType);
     }
     
+    @PostMapping("/{id}")//<-- userId
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<LoanEntity> creditCheck(@RequestBody LoanTypeEntity loan, @PathVariable String id){
+        System.out.println("credit check rcvd: " + loan.toString() + ", userId: " + id);
+        ResponseEntity<LoanEntity> response = new ResponseEntity<>(loanTypeService.creditCheck(loan, id), HttpStatus.OK);
+        return response;
+    }
+    
     @GetMapping
     public ResponseEntity<Page<LoanTypeEntity>> getAllLoanTypesPage(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
@@ -51,6 +60,13 @@ public class LoanTypeController {
     @PreAuthorize("permitAll()")
     public List<LoanTypeEntity> getAllLoanTypes(){
         return loanTypeService.getAll();
+    }
+    
+    @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<LoanTypeEntity> getSpecificLoanType(@PathVariable String id){
+        ResponseEntity<LoanTypeEntity> response = new ResponseEntity<>(loanTypeService.getSpecificLoanTypeEntity(id), HttpStatus.OK);
+        return response;
     }
 
     @PutMapping()

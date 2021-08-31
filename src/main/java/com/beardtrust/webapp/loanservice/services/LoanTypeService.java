@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.services;
 
+import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 
 import java.util.List;
@@ -14,4 +15,8 @@ public interface LoanTypeService {
     public List<LoanTypeEntity> getAll();
 
     public void deactivate(LoanTypeEntity loanType);
+    
+    public LoanTypeEntity getSpecificLoanTypeEntity(String id);
+    
+    public LoanEntity creditCheck(LoanTypeEntity loan, String id);
 }

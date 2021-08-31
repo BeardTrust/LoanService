@@ -20,7 +20,7 @@ public class LoanEntity {
     @ManyToOne
     private LoanTypeEntity loanType;
     @Embedded
-    private Balance balance;
+    private CurrencyValue currencyValue;
     private LocalDate createDate;
     private Integer principal;
     private Integer payDay;
@@ -49,12 +49,12 @@ public class LoanEntity {
         this.loanType = loanType;
     }
 
-    public Balance getBalance() {
-        return balance;
+    public CurrencyValue getCurrencyValue() {
+        return currencyValue;
     }
 
-    public void setBalance(Balance balance) {
-        this.balance = balance;
+    public void setCurrencyValue(CurrencyValue currencyValue) {
+        this.currencyValue = currencyValue;
     }
 
     public LocalDate getCreateDate() {
