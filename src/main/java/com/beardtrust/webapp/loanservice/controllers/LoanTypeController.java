@@ -37,7 +37,7 @@ public class LoanTypeController {
     @PostMapping("/{id}")//<-- userId
     @PreAuthorize("permitAll()")
     public ResponseEntity<LoanEntity> creditCheck(@RequestBody LoanTypeEntity loan, @PathVariable String id){
-        System.out.println("credit check rcvd: " + loan.toString() + ", userId: " + id);
+        System.out.println("credit check rcvd: " + loan + ", userId: " + id);
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(loanTypeService.creditCheck(loan, id), HttpStatus.OK);
         return response;
     }
