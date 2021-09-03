@@ -30,6 +30,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     @Override
     @Transactional
     public void save(LoanTypeEntity loanType) {
+        loanType.generateId();
         repo.save(loanType);
     }
 
@@ -40,7 +41,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Override
     public void deactivate(LoanTypeEntity loanType) {
-        repo.deactivateById(loanType.getId());
+        repo.deactivateByLoanTypeId(loanType.getLoanTypeId());
     }
 
     public Page<LoanTypeEntity> getAllLoanTypesPage(int pageNum, int pageSize, String[] sortBy, String search) {
@@ -61,7 +62,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
                 }
             } else {
                 System.out.println("generic search parameter");
-                return repo.findAllByAllIgnoreCaseIdOrTypeNameOrDescriptionAndActiveStatusIsTrue(search, search, search, page);
+                return repo.findAllByAllIgnoreCaseLoanTypeIdOrTypeNameOrDescriptionAndActiveStatusIsTrue(search, search, search, page);
             }
         }
         System.out.println("find all");
@@ -100,7 +101,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         lte.setApr(100.0);
         lte.setActiveStatus(false);
         lte.setDescription("ERROR - LOAN TYPE NOT FOUND. CONTACT ADMINISTRATOR.");
-        lte.setId("ERROR");
         lte.setNumMonths(0);
         lte.setTypeName("ERROR");
         try {
@@ -109,7 +109,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
             lte.setApr(ol.get().getApr());
             lte.setActiveStatus(true);
             lte.setDescription(ol.get().getDescription());
-            lte.setId(ol.get().getId());
             lte.setNumMonths(ol.get().getNumMonths());
             lte.setTypeName(ol.get().getTypeName());
             return lte;
@@ -123,13 +122,12 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     @Override
     public LoanEntity creditCheck(LoanTypeEntity loan, String id) {
         System.out.println("attempting credit check");
-        LoanEntity l = new LoanEntity();
         CurrencyValue c = new CurrencyValue();
         c.setDollars(1000);
         c.setCents(0);
+        LoanEntity l = new LoanEntity();
+        l.setCurrencyValue(c);
         l.setLoanType(loan);
-        l.setCreateDate(LocalDate.now());
-        l.setPayDay(30);
         l.setPrincipal(0);
         l.setCurrencyValue(c);
         l.setUserId(id);

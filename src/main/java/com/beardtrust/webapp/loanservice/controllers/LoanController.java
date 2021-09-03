@@ -6,6 +6,8 @@ import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,12 +46,24 @@ public class LoanController {
     public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
         return response;
-
     }
     
     @GetMapping("/all")
     public ResponseEntity<List<LoanEntity>> getAllLoans() {//<-- Admin calls full list
         ResponseEntity<List<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoans(), HttpStatus.OK);
+        return response;
+    }
+    
+    @PreAuthorize("permitAll()")
+    @GetMapping("/me")
+    public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
+            @RequestParam(name = "page", defaultValue = "0") int pageNum, 
+            @RequestParam(name = "size", defaultValue = "10") int pageSize,  
+            @RequestParam(name = "sortBy", defaultValue = "loanId,asc") String[] sortBy, 
+            @RequestParam(name = "search", defaultValue = "") String search) {
+        System.out.println("get my loans controller, search rcvd: " + search + ", sortby: " + sortBy);
+        Pageable page = PageRequest.of(pageNum, pageSize);
+        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search), HttpStatus.OK);
         return response;
 
     }

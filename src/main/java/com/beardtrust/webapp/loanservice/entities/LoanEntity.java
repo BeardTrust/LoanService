@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.entities;
 
+import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import java.time.LocalDate;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -23,7 +24,18 @@ public class LoanEntity {
     private CurrencyValue currencyValue;
     private LocalDate createDate;
     private Integer principal;
-    private Integer payDay;
+    private LocalDate nextDueDate;
+    private LocalDate previousDueDate;
+    private String valueTitle;
+
+    public String getValueString() {
+        setValueString(valueTitle);
+        return valueTitle;
+    }
+
+    public void setValueString(String valueTitle) {
+        this.valueTitle = currencyValue.toString();
+    }
 
     public String getLoanId() {
         return loanId;
@@ -38,7 +50,11 @@ public class LoanEntity {
     }
     
     public LoanEntity() {
+        System.out.println("building loan...");
         loanId = UUID.randomUUID().toString();
+        this.valueTitle = "0";
+        this.createDate = LocalDate.now();
+        this.nextDueDate = createDate.plusDays(30);
     }
 
     public LoanTypeEntity getLoanType() {
@@ -73,11 +89,25 @@ public class LoanEntity {
         this.principal = principal;
     }
 
-    public Integer getPayDay() {
-        return payDay;
+    public LocalDate getNextDueDate() {
+        return nextDueDate;
     }
 
-    public void setPayDay(Integer payDay) {
-        this.payDay = payDay;
+    public void setNextDueDate(LocalDate nextDueDate) {
+        this.nextDueDate = nextDueDate;
     }
+    
+    public void incrementDueDate() {
+        this.previousDueDate = this.nextDueDate;
+        this.nextDueDate = this.nextDueDate.plusDays(30);
+    }
+
+    public LocalDate getPreviousDueDate() {
+        return previousDueDate;
+    }
+
+    public void setPreviousDueDate(LocalDate previousDueDate) {
+        this.previousDueDate = previousDueDate;
+    }
+
 }

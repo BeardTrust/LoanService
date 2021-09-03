@@ -9,6 +9,8 @@ public interface LoanService {
 	
 	public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search);
         
+        public Page<LoanEntity> getAllMyLoansPage(int pn, int ps, String[] sb, String s);
+        
         public List<LoanEntity> getAllLoans();
 	
 	public LoanEntity getById(String id);

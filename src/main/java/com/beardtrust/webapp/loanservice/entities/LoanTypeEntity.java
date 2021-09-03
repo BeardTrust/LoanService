@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.entities;
 
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,7 +11,8 @@ import javax.persistence.Table;
 public class LoanTypeEntity {
 
     @Id
-    private String id;
+    @Column(name="LOANTYPEID")
+    private String loanTypeId;
     private String typeName;
     private String description;
     private Double apr;
@@ -23,19 +25,19 @@ public class LoanTypeEntity {
     }
 
     public LoanTypeEntity(String id, String typeName, String description, Double apr, Integer numMonths) {
-        this.id = id;
+        this.loanTypeId = UUID.randomUUID().toString();
         this.typeName = typeName;
         this.description = description;
         this.apr = apr;
         this.numMonths = numMonths;
     }
-
-    public String getId() {
-        return id;
+    
+    public void generateId() {
+        this.loanTypeId = UUID.randomUUID().toString();
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getLoanTypeId() {
+        return loanTypeId;
     }
 
     public String getTypeName() {
