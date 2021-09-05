@@ -1,9 +1,5 @@
 package com.beardtrust.webapp.loanservice.repos;
 
-package com.beardtrust.webapp.loanservice.entities;
-
-import com.beardtrust.webapp.loanservice.entities.Balance;
-import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import java.time.LocalDate;
 import org.springframework.data.domain.Page;
