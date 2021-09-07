@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 import static org.apache.commons.lang.NumberUtils.isNumber;
 import org.apache.commons.validator.GenericValidator;
 import static org.apache.commons.validator.GenericValidator.isDouble;
@@ -30,6 +32,11 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     @Override
     @Transactional
     public void save(LoanTypeEntity loanType) {
+        loanType.setActiveStatus(true);
+        if(loanType.getId() == null){
+            loanType.setId(UUID.randomUUID().toString());
+        }
+
         repo.save(loanType);
     }
 
@@ -39,10 +46,13 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     }
 
     @Override
-    public void deactivate(LoanTypeEntity loanType) {
-        repo.deactivateById(loanType.getId());
+    @Transactional
+    public void deactivate(String id) {
+        repo.deactivateById(id);
     }
 
+    @Override
+    @Transactional
     public Page<LoanTypeEntity> getAllLoanTypesPage(int pageNum, int pageSize, String[] sortBy, String search) {
         List<Sort.Order> orders = parseOrders(sortBy);
         System.out.println("Combined orders: " + orders);

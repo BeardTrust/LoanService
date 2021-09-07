@@ -14,7 +14,7 @@ public interface LoanTypeService {
 
     public List<LoanTypeEntity> getAll();
 
-    public void deactivate(LoanTypeEntity loanType);
+    public void deactivate(String id);
     
     public LoanTypeEntity getSpecificLoanTypeEntity(String id);
     
