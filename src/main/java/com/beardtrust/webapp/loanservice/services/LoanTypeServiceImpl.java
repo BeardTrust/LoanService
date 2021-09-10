@@ -41,9 +41,10 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Override
     public void deactivate(LoanTypeEntity loanType) {
-        repo.deactivateByLoanTypeId(loanType.getLoanTypeId());
+//        repo.deactivateById(loanType.getId());
     }
 
+    @Override
     public Page<LoanTypeEntity> getAllLoanTypesPage(int pageNum, int pageSize, String[] sortBy, String search) {
         List<Sort.Order> orders = parseOrders(sortBy);
         System.out.println("Combined orders: " + orders);
@@ -62,11 +63,11 @@ public class LoanTypeServiceImpl implements LoanTypeService {
                 }
             } else {
                 System.out.println("generic search parameter");
-                return repo.findAllByAllIgnoreCaseLoanTypeIdOrTypeNameOrDescriptionAndActiveStatusIsTrue(search, search, search, page);
+                return repo.findAllByActiveStatusIsTrueAndIdOrTypeNameIgnoreCaseOrDescriptionContainsIgnoreCase(search, search, search, page);
             }
         }
         System.out.println("find all");
-        return repo.findAll(page);
+        return repo.findAllByActiveStatusIsTrue(page);
     }
 
     private List<Sort.Order> parseOrders(String[] sortBy) {
@@ -106,6 +107,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         try {
             Optional<LoanTypeEntity> ol = repo.findById(id);
             System.out.println("loan type entity found: " + ol.get());
+            lte.setId(id);
             lte.setApr(ol.get().getApr());
             lte.setActiveStatus(true);
             lte.setDescription(ol.get().getDescription());
@@ -128,10 +130,23 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         LoanEntity l = new LoanEntity();
         l.setCurrencyValue(c);
         l.setLoanType(loan);
-        l.setPrincipal(0);
+        Integer prince = principalCalc(c, loan.getApr());
+        l.setPrincipal(prince);
         l.setCurrencyValue(c);
         l.setUserId(id);
         return l;
+    }
+    
+    public Integer principalCalc(CurrencyValue c, Double apr) {
+        CurrencyValue c2 = new CurrencyValue();
+        Integer p = 0;
+        double v = c.getDollars() + c.getCents();
+        double a = v * (1 + apr/100);
+        int ce = (int) (a - Math.floor(a));
+        int dol = (int) (a - (a - Math.floor(a)));
+        System.out.println("making principal with: $" + dol + " and $0." + ce);
+        c2.add(dol, ce);
+        return c2.getDollars() + c2.getCents();
     }
 
 }
