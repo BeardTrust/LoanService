@@ -34,9 +34,9 @@ public class LoanController {
 
     @PreAuthorize("permitAll()")
     @PostMapping()
-//    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-//    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<LoanEntity> createLoan(@RequestBody LoanEntity loan) {
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan) {
         System.out.println("Attempting to post, rcvd: " + loan.toString());
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
 		return response;

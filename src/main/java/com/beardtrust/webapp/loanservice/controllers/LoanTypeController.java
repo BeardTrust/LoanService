@@ -46,7 +46,7 @@ public class LoanTypeController {
     public ResponseEntity<Page<LoanTypeEntity>> getAllLoanTypesPage(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
             @RequestParam(name = "size", defaultValue = "10") int pageSize,
-            @RequestParam(name = "sortBy", defaultValue = "Id,asc") String[] sortBy,
+            @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
             @RequestParam(name = "search", defaultValue = "") String search) 
         {
             System.out.println("inbound parameters: pagenum " + pageNumber + ", pagesize: " + pageSize + ", sortby: " + sortBy.toString() + ", search: " + search);
@@ -75,9 +75,9 @@ public class LoanTypeController {
         loanTypeService.save(loanType);
     }
 
-    @DeleteMapping()
+    @DeleteMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public void deactivateLoanType(@RequestBody LoanTypeEntity loanType){
-        loanTypeService.deactivate(loanType);
+    public void deactivateLoanType(@PathVariable String id){
+        loanTypeService.deactivate(id);
     }
 }
