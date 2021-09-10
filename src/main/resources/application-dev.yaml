@@ -8,7 +8,7 @@ management:
   server:
     port: ${ACTPORT:0}
 gateway:
-  ip: ${GATEWAY:192.168.0.10}
+  ip: ${GATEWAY:localhost}
 spring:
   application:
     name: ${NAME:loans-service}

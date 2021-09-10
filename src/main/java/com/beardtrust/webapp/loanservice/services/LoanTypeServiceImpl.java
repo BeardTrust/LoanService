@@ -67,7 +67,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
             }
         }
         System.out.println("find all");
-        System.out.println("all loantypes in repo: " + repo.findAll());
         return repo.findAllByActiveStatusIsTrue(page);
     }
 
