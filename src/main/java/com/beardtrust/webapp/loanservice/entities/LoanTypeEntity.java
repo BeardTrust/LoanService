@@ -7,17 +7,17 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="loanTypes")
+@Table(name="loan_types")
 public class LoanTypeEntity {
 
     @Id
-    @Column(name="LOANTYPEID")
-    private String loanTypeId;
+    @Column(name = "id")
+    private String id;
     private String typeName;
+    @Column(name = "description")
     private String description;
     private Double apr;
     private Integer numMonths;
-    @Column(name = "ACTIVESTATUS")
     private boolean activeStatus;
 
     public LoanTypeEntity() {
@@ -25,7 +25,7 @@ public class LoanTypeEntity {
     }
 
     public LoanTypeEntity(String id, String typeName, String description, Double apr, Integer numMonths) {
-        this.loanTypeId = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID().toString();
         this.typeName = typeName;
         this.description = description;
         this.apr = apr;
@@ -33,11 +33,15 @@ public class LoanTypeEntity {
     }
     
     public void generateId() {
-        this.loanTypeId = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID().toString();
     }
 
-    public String getLoanTypeId() {
-        return loanTypeId;
+    public String getId() {
+        return id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTypeName() {
