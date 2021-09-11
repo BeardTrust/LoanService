@@ -111,28 +111,5 @@ public class LoanTypeServiceImplTest {
         assertThrows(ArrayIndexOutOfBoundsException.class,
                 () -> this.loanTypeServiceImpl.getAllLoanTypesPage(10, 3, new String[]{}, "Search"));
     }
-
-    @Test
-    public void testGetAllLoanTypesPage2() {
-        PageImpl<LoanTypeEntity> pageImpl = new PageImpl<LoanTypeEntity>(new ArrayList<LoanTypeEntity>());
-        when(this.loanTypeRepository.findAllByAllIgnoreCaseIdOrTypeNameOrDescriptionAndActiveStatusIsTrue((String) any(),
-                (String) any(), (String) any(), (org.springframework.data.domain.Pageable) any())).thenReturn(pageImpl);
-        Page<LoanTypeEntity> actualAllLoanTypesPage = this.loanTypeServiceImpl.getAllLoanTypesPage(0, 3,
-                new String[]{"Sort By", "Sort By"}, "Search");
-        assertSame(pageImpl, actualAllLoanTypesPage);
-        assertTrue(actualAllLoanTypesPage.toList().isEmpty());
-        verify(this.loanTypeRepository).findAllByAllIgnoreCaseIdOrTypeNameOrDescriptionAndActiveStatusIsTrue((String) any(),
-                (String) any(), (String) any(), (org.springframework.data.domain.Pageable) any());
-        assertTrue(this.loanTypeServiceImpl.getAll().isEmpty());
-    }
-
-    @Test
-    public void testGetAllLoanTypesPage3() {
-        when(this.loanTypeRepository.findAllByAllIgnoreCaseIdOrTypeNameOrDescriptionAndActiveStatusIsTrue((String) any(),
-                (String) any(), (String) any(), (org.springframework.data.domain.Pageable) any()))
-                .thenReturn(new PageImpl<LoanTypeEntity>(new ArrayList<LoanTypeEntity>()));
-        assertThrows(ArrayIndexOutOfBoundsException.class,
-                () -> this.loanTypeServiceImpl.getAllLoanTypesPage(-1, 3, new String[]{","}, "Search"));
-    }
 }
 
