@@ -1,12 +1,11 @@
 package com.beardtrust.webapp.loanservice.services;
 
-import com.beardtrust.webapp.userservice.dtos.UserDTO;
-import com.beardtrust.webapp.userservice.entities.UserEntity;
-import com.beardtrust.webapp.userservice.repos.AuthorizationRepository;
+import com.beardtrust.webapp.loanservice.dtos.UserDTO;
+import com.beardtrust.webapp.loanservice.entities.UserEntity;
+import com.beardtrust.webapp.loanservice.repos.AuthorizationRepository;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

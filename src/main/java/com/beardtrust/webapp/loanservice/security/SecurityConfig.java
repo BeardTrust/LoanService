@@ -1,19 +1,15 @@
 package com.beardtrust.webapp.loanservice.security;
 
-import com.beardtrust.webapp.userservice.services.AuthenticationService;
-import com.beardtrust.webapp.userservice.services.AuthorizationService;
-import com.beardtrust.webapp.userservice.services.UserService;
+import com.beardtrust.webapp.loanservice.services.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Description;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * The application's security configuration class.

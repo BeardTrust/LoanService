@@ -1,7 +1,7 @@
 package com.beardtrust.webapp.loanservice.security;
 
-import com.beardtrust.webapp.userservice.dtos.UserDTO;
-import com.beardtrust.webapp.userservice.services.AuthorizationService;
+import com.beardtrust.webapp.loanservice.dtos.UserDTO;
+import com.beardtrust.webapp.loanservice.services.AuthorizationService;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

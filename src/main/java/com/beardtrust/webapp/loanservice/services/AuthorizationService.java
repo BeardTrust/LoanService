@@ -1,6 +1,6 @@
 package com.beardtrust.webapp.loanservice.services;
 
-import com.beardtrust.webapp.userservice.dtos.UserDTO;
+import com.beardtrust.webapp.loanservice.dtos.UserDTO;
 
 /**
  * The interface Authorization service.
