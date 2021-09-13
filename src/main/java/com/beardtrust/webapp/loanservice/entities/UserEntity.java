@@ -1,13 +1,13 @@
 package com.beardtrust.webapp.loanservice.entities;
 
-import javax.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -23,6 +23,7 @@ public class UserEntity implements Serializable {
 	private String userId;
 	@Column(unique = true)
 	private String username;
+	@JsonBackReference
 	private String password;
 	@Column(unique = true)
 	private String email;
@@ -231,3 +232,4 @@ public class UserEntity implements Serializable {
 				'}';
 	}
 }
+

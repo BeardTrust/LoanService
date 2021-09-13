@@ -1,8 +1,9 @@
 package com.beardtrust.webapp.loanservice.security;
 
-import com.beardtrust.webapp.loanservice.dtos.UserDTO;
-import com.beardtrust.webapp.loanservice.services.AuthorizationService;
+import com.beardtrust.webapp.userservice.dtos.UserDTO;
+import com.beardtrust.webapp.userservice.services.AuthorizationService;
 import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,7 +21,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AuthorizationFilter extends BasicAuthenticationFilter{
+/**
+ * The Authorization filter.
+ *
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ */
+@Slf4j
+public class AuthorizationFilter extends BasicAuthenticationFilter {
 	private final Environment environment;
 	private final AuthorizationService authorizationService;
 
@@ -33,34 +40,41 @@ public class AuthorizationFilter extends BasicAuthenticationFilter{
 	 */
 	@Autowired
 	public AuthorizationFilter(AuthenticationManager authenticationManager, Environment environment,
-                               AuthorizationService authorizationService) {
+							   AuthorizationService authorizationService) {
 		super(authenticationManager);
 		this.environment = environment;
 		this.authorizationService = authorizationService;
 	}
 
+	@Override
 	protected void doFilterInternal(HttpServletRequest request,
 									HttpServletResponse response,
 									FilterChain chain) throws IOException, ServletException {
-		System.out.println("doFilterInternal()");
 		String authorizationHeader = request.getHeader(environment.getProperty("authorization.token.header.name"));
 
 		if (authorizationHeader != null && authorizationHeader.startsWith(environment.getProperty("authorization" +
 				".token.header.prefix"))) {
+			log.info("Filtering new request");
 			UsernamePasswordAuthenticationToken authentication = getAuthentication(request);
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 		} else {
+			log.error("Incoming request missing required components");
 		}
 		chain.doFilter(request, response);
 	}
-	
+
+	/**
+	 * This function builds the authentication token to be used in authorization.
+	 *
+	 * @param request
+	 * @return
+	 */
 	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-		System.out.println("getAuthentication()");
+		log.info("Validating requester authorization");
 		String authorizationHeader = request.getHeader(environment.getProperty("authorization.token.header.name"));
 		UsernamePasswordAuthenticationToken authenticationToken = null;
 		if (authorizationHeader != null) {
-			System.out.println("authorizationHeader != null");
 			String token = authorizationHeader.replace(environment.getProperty("authorization.token" +
 					".header.prefix") + " ", "");
 
@@ -71,11 +85,9 @@ public class AuthorizationFilter extends BasicAuthenticationFilter{
 					.getSubject();
 
 			if (userId != null) {
-				System.out.println("userId != null");
 				UserDTO userDTO = authorizationService.getUserByUserId(userId);
 
 				if (userDTO != null) {
-					System.out.println("userDTO != null");
 					List<GrantedAuthority> authorities = new ArrayList<>();
 
 					if (userDTO.getRole().equals("admin")) {
@@ -89,10 +101,9 @@ public class AuthorizationFilter extends BasicAuthenticationFilter{
 					authenticationToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
 				}
 			} else {
-				//log.error("Unable to validate requester's authorization");
+				log.error("Unable to validate requester's authorization");
 			}
 		}
 		return authenticationToken;
 	}
 }
-
