@@ -34,21 +34,23 @@ public class LoanController {
 
     @PreAuthorize("permitAll()")
     @PostMapping()
-//    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-//    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<LoanEntity> createLoan(@RequestBody LoanEntity loan) {
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan) {
         System.out.println("Attempting to post, rcvd: " + loan.toString());
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
 		return response;
     }
 
     @GetMapping
+    @PreAuthorize("hasAutority('admin')")
     public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
         return response;
     }
     
     @GetMapping("/all")
+    @PreAuthorize("hasAutority('admin')")
     public ResponseEntity<List<LoanEntity>> getAllLoans() {//<-- Admin calls full list
         ResponseEntity<List<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoans(), HttpStatus.OK);
         return response;
@@ -69,12 +71,14 @@ public class LoanController {
     }
     
     @PutMapping()
+    @PreAuthorize("hasAutority('admin')")
     public ResponseEntity<String> updateLoan(@RequestBody LoanEntity a) {//<-- The entity with new/updated info
         ResponseEntity<String> response = new ResponseEntity<>(ls.updateLoan(a), HttpStatus.OK);
         return response;
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAutority('admin')")
     public String deleteLoan(@PathVariable String id) {
         try {
             ls.deleteById(id);

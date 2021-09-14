@@ -1,16 +1,35 @@
 package com.beardtrust.webapp.loanservice.security;
 
+import com.beardtrust.webapp.loanservice.services.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Description;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
+/**
+ * The application's security configuration class.
+ *
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ */
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+	private final Environment environment;
+	private final AuthorizationService authorizationService;
+
+	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+	@Autowired
+	public SecurityConfig(Environment environment, AuthorizationService authorizationService) {
+		this.environment = environment;
+		this.authorizationService = authorizationService;
+	}
 
 	@Description("Configure HTTP Security")
 	@Override
@@ -18,7 +37,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.cors()
 				.and().authorizeRequests()
-				.anyRequest().permitAll();
+				.antMatchers(HttpMethod.POST, "/loans/**").permitAll()
+				.antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
+				.and().authorizeRequests().anyRequest().authenticated()
+				.and()
+				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
 		http.headers().frameOptions().disable();
 	}
 }

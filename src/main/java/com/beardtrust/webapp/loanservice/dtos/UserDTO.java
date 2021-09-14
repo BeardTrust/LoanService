@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Data
 public class UserDTO implements Serializable {
 
-	private String userId;
+	private String id;
 	private String username;
 	private String email;
 	private String phone;

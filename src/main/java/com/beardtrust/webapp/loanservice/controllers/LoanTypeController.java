@@ -28,7 +28,7 @@ public class LoanTypeController {
     }
 
     @PostMapping()
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAutority('admin')")
     public void createLoanType(@RequestBody LoanTypeEntity loanType){
         System.out.println("inbound loan type: " + loanType);
         loanTypeService.save(loanType);
@@ -43,10 +43,11 @@ public class LoanTypeController {
     }
     
     @GetMapping
+    @PreAuthorize("hasAutority('admin')")
     public ResponseEntity<Page<LoanTypeEntity>> getAllLoanTypesPage(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
             @RequestParam(name = "size", defaultValue = "10") int pageSize,
-            @RequestParam(name = "sortBy", defaultValue = "Id,asc") String[] sortBy,
+            @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
             @RequestParam(name = "search", defaultValue = "") String search) 
         {
             System.out.println("inbound parameters: pagenum " + pageNumber + ", pagesize: " + pageSize + ", sortby: " + sortBy.toString() + ", search: " + search);
@@ -57,7 +58,7 @@ public class LoanTypeController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAutority('admin')")
     public List<LoanTypeEntity> getAllLoanTypes(){
         return loanTypeService.getAll();
     }
@@ -70,14 +71,14 @@ public class LoanTypeController {
     }
 
     @PutMapping()
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAutority('admin')")
     public void updateLoanType(@RequestBody LoanTypeEntity loanType){
         loanTypeService.save(loanType);
     }
 
-    @DeleteMapping()
-    @PreAuthorize("permitAll()")
-    public void deactivateLoanType(@RequestBody LoanTypeEntity loanType){
-        loanTypeService.deactivate(loanType);
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAutority('admin')")
+    public void deactivateLoanType(@PathVariable String id){
+        loanTypeService.deactivate(id);
     }
 }
