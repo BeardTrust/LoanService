@@ -1,12 +1,12 @@
 package com.beardtrust.webapp.loanservice.services;
 
-import com.beardtrust.webapp.loanservice.entities.Balance;
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
-import java.time.LocalDate;
 import java.util.ArrayList;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang.NumberUtils.isNumber;
-import org.apache.commons.validator.GenericValidator;
+
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 import static org.apache.commons.validator.GenericValidator.isDouble;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @Service
+@Slf4j
 public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Autowired
@@ -60,7 +61,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         System.out.println("Compiled page: " + page);
         System.out.println("Search param: " + search);
         if (!("").equals(search)) {
-            if (isNumber(search)) {
+            if (isCreatable(search)) {
                 if (isDouble(search)) {
                     Double newSearch = Double.parseDouble(search);
                     return repo.findAllByApr(newSearch, page);
@@ -105,7 +106,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Override
     public LoanTypeEntity getSpecificLoanTypeEntity(String id) {
-        System.out.println("get specific loantype request. inbound id: " + id);
         LoanTypeEntity lte = new LoanTypeEntity();
         lte.setApr(100.0);
         lte.setActiveStatus(false);
@@ -114,18 +114,17 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         lte.setTypeName("ERROR");
         try {
             Optional<LoanTypeEntity> ol = repo.findById(id);
-            System.out.println("loan type entity found: " + ol.get());
-            lte.setId(id);
-            lte.setApr(ol.get().getApr());
-            lte.setActiveStatus(true);
-            lte.setDescription(ol.get().getDescription());
-            lte.setNumMonths(ol.get().getNumMonths());
-            lte.setTypeName(ol.get().getTypeName());
-            return lte;
+            if(ol.isPresent()){
+                lte.setId(id);
+                lte.setApr(ol.get().getApr());
+                lte.setActiveStatus(true);
+                lte.setDescription(ol.get().getDescription());
+                lte.setNumMonths(ol.get().getNumMonths());
+                lte.setTypeName(ol.get().getTypeName());
+            }
         } catch (Exception e) {
-            System.out.println("exception caught: " + e.getMessage());
+            log.error(e.getMessage());
         }
-        System.out.println("returning: " + lte);
         return lte;
     }
 
