@@ -31,6 +31,12 @@ public class LoanController {
     public LoanController(LoanService ls) {
         this.ls = ls;
     }
+	
+    @GetMapping(path = "/health")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALU
+	public ResponseEntity<String> healthCheck() {
+        return new ResponseEntity<>("Healthy", HttpStatus.OK);
+    }
 
     @PreAuthorize("permitAll()")
     @PostMapping()
