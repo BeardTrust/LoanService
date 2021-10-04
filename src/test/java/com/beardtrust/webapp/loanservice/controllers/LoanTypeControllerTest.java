@@ -112,7 +112,7 @@ public class LoanTypeControllerTest {
                 .perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("<[]>"));
+                .andExpect(MockMvcResultMatchers.content().string("<<[]>>"));
     }
 
     @Test
@@ -125,7 +125,7 @@ public class LoanTypeControllerTest {
                 .perform(getResult)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("<[]>"));
+                .andExpect(MockMvcResultMatchers.content().string("<<[]>>"));
     }
 
     @Test
