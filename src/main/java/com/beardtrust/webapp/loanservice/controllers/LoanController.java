@@ -3,6 +3,7 @@ package com.beardtrust.webapp.loanservice.controllers;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.services.LoanService;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/loans")
+@Slf4j
 public class LoanController {
 
     private final LoanService ls;
@@ -32,9 +34,11 @@ public class LoanController {
         this.ls = ls;
     }
 	
+    @PreAuthorize("permitAll()")
     @GetMapping(path = "/health")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<String> healthCheck() {
+            log.info("Health Check Incoming");
         return new ResponseEntity<>("Healthy", HttpStatus.OK);
     }
 
