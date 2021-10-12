@@ -21,27 +21,29 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final Environment environment;
-	private final AuthorizationService authorizationService;
+    private final Environment environment;
+    private final AuthorizationService authorizationService;
 
-	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-	@Autowired
-	public SecurityConfig(Environment environment, AuthorizationService authorizationService) {
-		this.environment = environment;
-		this.authorizationService = authorizationService;
-	}
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    public SecurityConfig(Environment environment, AuthorizationService authorizationService) {
+        this.environment = environment;
+        this.authorizationService = authorizationService;
+    }
 
-	@Description("Configure HTTP Security")
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable();
-		http.cors()
-				.and().authorizeRequests()
-				.antMatchers(HttpMethod.POST, "/loans/**").permitAll()
-				.antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
-				.and().authorizeRequests().anyRequest().authenticated()
-				.and()
-				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
-		http.headers().frameOptions().disable();
-	}
+    @Description("Configure HTTP Security")
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+        http.cors()
+                .and().authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/loans/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/loans/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/loantypes/**").permitAll()
+                .and().authorizeRequests().anyRequest().authenticated()
+                .and()
+                .addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
+        http.headers().frameOptions().disable();
+    }
 }

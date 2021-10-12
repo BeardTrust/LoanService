@@ -82,6 +82,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     public LoanEntity save(LoanEntity l) {
+        System.out.println("Attempting to save: " + l.toString());
         repo.save(l);
         return l;
     }

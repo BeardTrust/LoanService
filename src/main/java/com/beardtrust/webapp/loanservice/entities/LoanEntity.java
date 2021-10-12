@@ -24,28 +24,22 @@ public class LoanEntity {
     private LoanTypeEntity loanType;
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "cents", column = @Column(name = "principal_cents")),
-        @AttributeOverride(name = "dollars", column = @Column(name = "principal_dollars")),
-        @AttributeOverride(name = "is_negative", column = @Column(name = "principal_negative", insertable=false, nullable=false, updatable=false))
+        @AttributeOverride(name = "cents", column = @Column(name = "principalCents")),
+        @AttributeOverride(name = "dollars", column = @Column(name = "principalDollars")),
+        @AttributeOverride(name = "isNegative", column = @Column(name = "principalIsNegative"))
     })
     private CurrencyValue principal;
-    @Embedded
     private LocalDate createDate;
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "cents", column = @Column(name = "balance_cents")),
-        @AttributeOverride(name = "dollars", column = @Column(name = "balance_dollars")),
-        @AttributeOverride(name = "is_negative", column = @Column(name = "balance_negative", insertable=false, nullable=false, updatable=false))
+        @AttributeOverride(name = "cents", column = @Column(name = "balanceCents")),
+        @AttributeOverride(name = "dollars", column = @Column(name = "balanceDollars")),
+        @AttributeOverride(name = "isNegative", column = @Column(name = "balanceIsNegative"))
     })
     private CurrencyValue balance;
     private LocalDate nextDueDate;
     private LocalDate previousDueDate;
     private String valueTitle;
-
-    public String getValueString() {
-        setValueString(valueTitle);
-        return valueTitle;
-    }
 
     public void setValueString(String valueTitle) {
         this.valueTitle = balance.toString();
@@ -69,6 +63,7 @@ public class LoanEntity {
         this.valueTitle = "0";
         this.createDate = LocalDate.now();
         this.nextDueDate = createDate.plusDays(30);
+        this.previousDueDate = createDate.minusDays(30);
     }
 
     public LoanTypeEntity getLoanType() {
@@ -111,19 +106,6 @@ public class LoanEntity {
         this.valueTitle = valueTitle;
     }
 
-//    public void calculateBalance() {
-//        String temp = principal.toString();
-//        System.out.println("Creating balance...");
-//        System.out.println("Principal: " + principal.toString());
-//        Double b = Double.parseDouble(temp);
-//        b = b * loanType.getApr();
-//        System.out.println("APR: " + loanType.getApr());
-//        temp = String.valueOf(b);
-//        System.out.println("Calculated balance: " + temp);
-//        String[] nums = temp.split(".");
-//        balance.setDollars(Integer.valueOf(nums[0]));
-//        balance.setCents(Integer.valueOf(nums[1]));
-//    }
     public LocalDate getNextDueDate() {
         return nextDueDate;
     }
@@ -143,6 +125,26 @@ public class LoanEntity {
 
     public void setPreviousDueDate(LocalDate previousDueDate) {
         this.previousDueDate = previousDueDate;
+    }
+
+    @Override
+    public String toString() {
+        return "\nloan Id: " + this.loanId
+                + "\nuser Id: " + this.userId
+                + "\nprincipal dollars: " + this.principal.getDollars()
+                + "\nprincipal cents: " + this.principal.getCents()
+                + "\nprincipal isNegative: " + this.principal.isNegative()
+                + "\nAPR: " + this.loanType.getApr()
+                + "\nbalance dollars: " + this.balance.getDollars()
+                + "\nbalance cents: " + this.balance.getCents()
+                + "\nbalance isNegative: " + this.balance.isNegative()
+                + "\nloanType Id: " + this.loanType.getId()
+                + "\nloanType typeName: " + this.loanType.getTypeName()
+                + "\nloanType description: " + this.loanType.getDescription()
+                + "\ncreateDate: " + this.getCreateDate()
+                + "\nnextDueDate: " + this.getNextDueDate()
+                + "\npreviousDueDate: " + this.getPreviousDueDate()
+                + "\nvalueTitle: " + this.getValueTitle();
     }
 
 }
