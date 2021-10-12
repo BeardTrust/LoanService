@@ -43,7 +43,7 @@ public class LoanTypeController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAutority('admin')")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Page<LoanTypeEntity>> getAllLoanTypesPage(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
             @RequestParam(name = "size", defaultValue = "10") int pageSize,

@@ -134,11 +134,11 @@ public class LoanServiceImpl implements LoanService {
             if (isDouble(search)) {
                 System.out.println("search was a double");
                 Double newSearch = Double.parseDouble(search);
-                return repo.findAllByLoanType_AprOrCurrencyValue_DollarsOrCurrencyValue_CentsAndUserId(newSearch, newSearch, newSearch, userId, page);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUserId(newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
             } else if (isNumber(search)){
                 System.out.println("search was an Integer");
                 Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanType_NumMonthsOrPrincipalAndUserId(newSearch, newSearch, userId, page);
+                return repo.findAllByLoanType_NumMonthsAndUserId(newSearch, newSearch, userId, page);
             } if (GenericValidator.isDate(search, "yyyy-MM", false)) {
                 System.out.println("search was a date");
                 return repo.findByCreateDateOrNextDueDateAndUserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);

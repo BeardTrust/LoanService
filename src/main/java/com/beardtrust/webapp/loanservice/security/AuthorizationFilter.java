@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.security;
 
+import com.beardtrust.webapp.loanservice.services.AuthorizationService;
 import com.beardtrust.webapp.loanservice.dtos.UserDTO;
 import com.beardtrust.webapp.loanservice.services.AuthorizationService;
 import io.jsonwebtoken.Jwts;
@@ -28,82 +29,97 @@ import java.util.List;
  */
 @Slf4j
 public class AuthorizationFilter extends BasicAuthenticationFilter {
-	private final Environment environment;
-	private final AuthorizationService authorizationService;
 
-	/**
-	 * Instantiates a new Authorization filter.
-	 *
-	 * @param authenticationManager the authentication manager
-	 * @param environment           the environment
-	 * @param authorizationService  the authorization service
-	 */
-	@Autowired
-	public AuthorizationFilter(AuthenticationManager authenticationManager, Environment environment,
-							   AuthorizationService authorizationService) {
-		super(authenticationManager);
-		this.environment = environment;
-		this.authorizationService = authorizationService;
-	}
+    private final Environment environment;
+    private final AuthorizationService authorizationService;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request,
-									HttpServletResponse response,
-									FilterChain chain) throws IOException, ServletException {
-		String authorizationHeader = request.getHeader(environment.getProperty("authorization.token.header.name"));
+    /**
+     * Instantiates a new Authorization filter.
+     *
+     * @param authenticationManager the authentication manager
+     * @param environment the environment
+     * @param authorizationService the authorization service
+     */
+    @Autowired
+    public AuthorizationFilter(AuthenticationManager authenticationManager, Environment environment,
+            AuthorizationService authorizationService) {
+        super(authenticationManager);
+        log.trace("Building Authorization Filter...");
+        this.environment = environment;
+        this.authorizationService = authorizationService;
+    }
 
-		if (authorizationHeader != null && authorizationHeader.startsWith(environment.getProperty("authorization" +
-				".token.header.prefix"))) {
-			log.info("Filtering new request");
-			UsernamePasswordAuthenticationToken authentication = getAuthentication(request);
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        String authorizationHeader = request.getHeader(environment.getProperty("authorization.token.header.name"));
+        log.trace("Internal Filtering...");
+        log.debug("Authorization header: " + authorizationHeader);
 
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-		} else {
-			log.error("Incoming request missing required components");
-		}
-		chain.doFilter(request, response);
-	}
+        if (authorizationHeader != null && authorizationHeader.startsWith(environment.getProperty("authorization"
+                + ".token.header.prefix"))) {
+            log.info("Filtering new request");
+            UsernamePasswordAuthenticationToken authentication = getAuthentication(request);
 
-	/**
-	 * This function builds the authentication token to be used in authorization.
-	 *
-	 * @param request
-	 * @return
-	 */
-	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-		log.info("Validating requester authorization");
-		String authorizationHeader = request.getHeader(environment.getProperty("authorization.token.header.name"));
-		UsernamePasswordAuthenticationToken authenticationToken = null;
-		if (authorizationHeader != null) {
-			String token = authorizationHeader.replace(environment.getProperty("authorization.token" +
-					".header.prefix") + " ", "");
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            log.error("Incoming request missing required components");
+        }
+        log.trace("Completing Filter...");
+        chain.doFilter(request, response);
+    }
 
-			String userId = Jwts.parser()
-					.setSigningKey(environment.getProperty("token.secret"))
-					.parseClaimsJws(token)
-					.getBody()
-					.getSubject();
+    /**
+     * This function builds the authentication token to be used in
+     * authorization.
+     *
+     * @param request
+     * @return
+     */
+    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
+        log.info("Validating requester authorization");
+        log.trace("Validating requester authorization");
+        String authorizationHeader = request.getHeader(environment.getProperty("authorization.token.header.name"));
+        log.debug("Authorization header: " + authorizationHeader);
+        UsernamePasswordAuthenticationToken authenticationToken = null;
+        if (authorizationHeader != null) {
+            log.trace("Header present, attempting to create token...");
+            String token = authorizationHeader.replace(environment.getProperty("authorization.token"
+                    + ".header.prefix") + " ", "");
 
-			if (userId != null) {
-				UserDTO userDTO = authorizationService.getUserByUserId(userId);
+            String userId = Jwts.parser()
+                    .setSigningKey(environment.getProperty("token.secret"))
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
 
-				if (userDTO != null) {
-					List<GrantedAuthority> authorities = new ArrayList<>();
+            if (userId != null) {
+                log.trace("User Id found, retrierving DTO...");
+                UserDTO userDTO = authorizationService.getUserByUserId(userId);
 
-					if (userDTO.getRole().equals("admin")) {
-						SimpleGrantedAuthority admin = new SimpleGrantedAuthority("admin");
-						authorities.add(admin);
-					} else if (userDTO.getRole().equals("user")) {
-						SimpleGrantedAuthority user = new SimpleGrantedAuthority("user");
-						authorities.add(user);
-					}
+                if (userDTO != null) {
+                    log.trace("User DTO not found, creating...");
+                    List<GrantedAuthority> authorities = new ArrayList<>();
 
-					authenticationToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
-				}
-			} else {
-				log.error("Unable to validate requester's authorization");
-			}
-		}
-		return authenticationToken;
-	}
+                    if (userDTO.getRole().equals("admin")) {
+                        log.trace("Admin role found...");
+                        SimpleGrantedAuthority admin = new SimpleGrantedAuthority("admin");
+                        authorities.add(admin);
+                    } else if (userDTO.getRole().equals("user")) {
+                        log.trace("User role found...");
+                        SimpleGrantedAuthority user = new SimpleGrantedAuthority("user");
+                        authorities.add(user);
+                    }
+                    log.trace("Creating token...");
+                    authenticationToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                    log.debug("Token created: " + authenticationToken);
+                }
+            } else {
+                log.error("Unable to validate requester's authorization");
+            }
+        }
+        log.trace("Returning token...");
+        return authenticationToken;
+    }
 }

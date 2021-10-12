@@ -6,6 +6,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.persistence.Column;
 
 /**
  * This class provides an accurate and consistent representation of currency
@@ -18,6 +19,7 @@ public class CurrencyValue implements Serializable, Comparable<CurrencyValue> {
 	private static final long serialVersionUID = -7883135732977736303L;
 
 	@NotNull(message = "Negative value indicator cannot be null")
+        @Column(insertable=false, updatable=false)
 	private boolean isNegative;
 	private int dollars;
 	@Min(value = -99, message = "Cents cannot exceed the value of a dollar")
