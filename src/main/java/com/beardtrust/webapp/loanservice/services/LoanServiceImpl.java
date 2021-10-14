@@ -6,8 +6,10 @@ import java.util.List;
 
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
+import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.UUID;
 import static org.apache.commons.lang.NumberUtils.isNumber;
 import org.apache.commons.validator.GenericValidator;
 import static org.apache.commons.validator.GenericValidator.isDouble;
@@ -21,9 +23,15 @@ import org.springframework.stereotype.Service;
 public class LoanServiceImpl implements LoanService {
 
     private LoanRepository repo;
+    private LoanTypeRepository ltr;
 
-    public LoanServiceImpl(LoanRepository repo) {
+    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr) {
         this.repo = repo;
+        this.ltr = ltr;
+    }
+    
+    public LoanEntity getNewLoan() {
+        return new LoanEntity();
     }
 
     @Override
@@ -82,8 +90,20 @@ public class LoanServiceImpl implements LoanService {
     }
 
     public LoanEntity save(LoanEntity l) {
-        System.out.println("Attempting to save: " + l.toString());
+        try {
+            System.out.println("Attempting to save: " + l.toString());
         repo.save(l);
+        } catch (Exception e) {
+            System.out.println("Unable to save");
+        }
+        try {
+            System.out.println("Attempting to save loan type: " + l.getLoanType().toString());
+            ltr.save(l.getLoanType());
+            repo.save(l);
+        } catch (Exception e) {
+            System.out.println("Unable to save loan type");
+        }
+        System.out.println("Loan Saved...");
         return l;
     }
 

@@ -28,15 +28,16 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Autowired
     LoanTypeRepository repo;
+    
+    public LoanTypeEntity getNewLoanType() {
+        return new LoanTypeEntity();
+    }
 
     @Override
     @Transactional
     public void save(LoanTypeEntity loanType) {
+        System.out.println("incoming loan type id: " + loanType.getId());
         loanType.setActiveStatus(true);
-        if(loanType.getId() == null){
-            loanType.setId(UUID.randomUUID().toString());
-        }
-
         repo.save(loanType);
     }
 

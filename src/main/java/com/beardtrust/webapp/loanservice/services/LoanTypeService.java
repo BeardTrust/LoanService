@@ -19,4 +19,6 @@ public interface LoanTypeService {
     public LoanTypeEntity getSpecificLoanTypeEntity(String id);
     
     public LoanEntity creditCheck(LoanTypeEntity loan, String id);
+    
+     public LoanTypeEntity getNewLoanType();
 }

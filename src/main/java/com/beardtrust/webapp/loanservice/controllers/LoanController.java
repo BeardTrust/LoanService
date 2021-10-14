@@ -3,8 +3,10 @@ package com.beardtrust.webapp.loanservice.controllers;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.services.LoanService;
 import java.util.List;
+import java.util.UUID;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +26,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/loans")
+@Slf4j
 public class LoanController {
 
     private final LoanService ls;
 
     public LoanController(LoanService ls) {
         this.ls = ls;
+    }
+    
+    @PreAuthorize("permitAll()")
+    @GetMapping("/new")
+    public ResponseEntity<LoanEntity> getNewUUID() {
+        log.trace("Get new endpoint reached...");
+        String res = UUID.randomUUID().toString();
+        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.getNewLoan(), HttpStatus.OK);
+        log.info("Outbound entity: " + response);
+        return response;
     }
 
     @PreAuthorize("permitAll()")

@@ -21,15 +21,11 @@ public class LoanTypeEntity {
     private boolean activeStatus;
 
     public LoanTypeEntity() {
-        super();
-    }
-
-    public LoanTypeEntity(String id, String typeName, String description, Double apr, Integer numMonths) {
         this.id = UUID.randomUUID().toString();
-        this.typeName = typeName;
-        this.description = description;
-        this.apr = apr;
-        this.numMonths = numMonths;
+        this.typeName = "null";
+        this.description = "null";
+        this.apr = 0.0;
+        this.numMonths = 12;
     }
     
     public void generateId() {

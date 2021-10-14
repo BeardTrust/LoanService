@@ -20,5 +20,7 @@ public interface LoanService {
 	public LoanEntity save(LoanEntity l);
         
         public String updateLoan(LoanEntity l);
+        
+        public LoanEntity getNewLoan();
 
 }

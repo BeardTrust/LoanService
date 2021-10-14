@@ -61,6 +61,9 @@ public class LoanEntity {
         System.out.println("building loan...");
         loanId = UUID.randomUUID().toString();
         this.valueTitle = "0";
+        this.loanType = new LoanTypeEntity();
+        this.principal = new CurrencyValue();
+        this.balance = new CurrencyValue();
         this.createDate = LocalDate.now();
         this.nextDueDate = createDate.plusDays(30);
         this.previousDueDate = createDate.minusDays(30);
