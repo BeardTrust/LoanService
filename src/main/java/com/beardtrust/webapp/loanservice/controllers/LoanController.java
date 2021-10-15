@@ -34,45 +34,50 @@ public class LoanController {
         this.ls = ls;
     }
 
-    @PreAuthorize("permitAll()")
     @PostMapping()
+    @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan) {
         log.trace("Start LoanController.registerLoan(" + loan.toString() + ")");
-        //System.out.println("Attempting to post, rcvd: " + loan.toString());
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
         log.trace("End LoanController.registerLoan(" + loan.toString() + ")");
 		return response;
     }
 
     @GetMapping
-    @PreAuthorize("hasAutority('admin')")
-    public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
+    @PreAuthorize("hasAuthority('admin')")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {
         log.trace("Start LoanController.getAllLoansPage(" + pageNum + ", " + pageSize + ", " + sortName + ", " + sortDir + ", " + search + ")");
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
         log.trace("End LoanController.getAllLoansPage(" + pageNum + ", " + pageSize + ", " + sortName + ", " + sortDir + ", " + search + ")");
         return response;
     }
-    
+
     @GetMapping("/all")
-    @PreAuthorize("hasAutority('admin')")
-    public ResponseEntity<List<LoanEntity>> getAllLoans() {//<-- Admin calls full list
+    @PreAuthorize("hasAuthority('admin')")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<List<LoanEntity>> getAllLoans() {
         log.trace("Start LoanController.getAllLoans()");
         ResponseEntity<List<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoans(), HttpStatus.OK);
         log.trace("End LoanController.getAllLoans()");
         return response;
     }
-    
-    @PreAuthorize("permitAll()")
+
+
     @GetMapping("/me")
-    public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
+    @PreAuthorize("hasAuthority('admin')")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(
             @RequestParam(name = "page", defaultValue = "0") int pageNum, 
             @RequestParam(name = "size", defaultValue = "10") int pageSize,  
             @RequestParam(name = "sortBy", defaultValue = "loanId,asc") String[] sortBy, 
             @RequestParam(name = "search", defaultValue = "") String search) {
         log.trace("Start LoanController.getAllMyLoansPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
-        //System.out.println("get my loans controller, search rcvd: " + search + ", sortby: " + sortBy);
         Pageable page = PageRequest.of(pageNum, pageSize);
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search), HttpStatus.OK);
         log.trace("End LoanController.getAllMyLoansPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
@@ -81,8 +86,10 @@ public class LoanController {
     }
     
     @PutMapping()
-    @PreAuthorize("hasAutority('admin')")
-    public ResponseEntity<String> updateLoan(@RequestBody LoanEntity a) {//<-- The entity with new/updated info
+    @PreAuthorize("hasAuthority('admin')")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<String> updateLoan(@RequestBody LoanEntity a) {
         log.trace("Start LoanController.updateLoan(" + a + ")");
         ResponseEntity<String> response = new ResponseEntity<>(ls.updateLoan(a), HttpStatus.OK);
         log.trace("End LoanController.updateLoan(" + a + ")");
@@ -90,7 +97,9 @@ public class LoanController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAutority('admin')")
+    @PreAuthorize("hasAuthority('admin')")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public String deleteLoan(@PathVariable String id) {
         log.trace("Start LoanController.deleteLoan(" + id + ")");
         try {

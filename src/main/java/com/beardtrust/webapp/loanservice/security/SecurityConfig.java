@@ -39,6 +39,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.and().authorizeRequests()
 				.antMatchers(HttpMethod.POST, "/loans/**").permitAll()
 				.antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
+				.antMatchers(HttpMethod.PUT, "/loantypes/**").permitAll()
+				.antMatchers(HttpMethod.DELETE, "/loantypes/**").permitAll()
 				.and().authorizeRequests().anyRequest().authenticated()
 				.and()
 				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));

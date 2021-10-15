@@ -65,10 +65,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     public Page<LoanTypeEntity> getAllLoanTypesPage(int pageNum, int pageSize, String[] sortBy, String search) {
         log.trace("Start LoanTypeService.getAllLoanTypesPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
         List<Sort.Order> orders = parseOrders(sortBy);
-        //System.out.println("Combined orders: " + orders);
         Pageable page = PageRequest.of(pageNum, pageSize, Sort.by(orders));
-        //System.out.println("Compiled page: " + page);
-        //System.out.println("Search param: " + search);
         if (!("").equals(search)) {
             if (isNumber(search)) {
                 if (isDouble(search)) {
