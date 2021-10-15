@@ -12,19 +12,14 @@ public interface LoanRepository extends JpaRepository<LoanEntity, String> {
 
     public Page<LoanEntity> findByCreateDate(LocalDate parse, Pageable page);
     
-    public Page<LoanEntity> findAllByUserId(String userId, Pageable page);
+    public Page<LoanEntity> findAllByUser_UserId(String userId, Pageable page);
 
-    public LoanEntity findByLoanId(String loanId);
+    public Page<LoanEntity> findByCreateDateOrNextDueDateAndUser_UserId(LocalDate parse, LocalDate parse0, String userId, Pageable page);
 
-    public Page<LoanEntity> findAllByLoanType_NumMonthsOrPrincipalAndUserId(Integer newSearch, Integer newSearch0, String userId, Pageable page);
+    public Page<LoanEntity> findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUser_UserId(Double newSearch, Double newSearch0, Double newSearch1, Double newSearch2, Double newSearch3, String userId, Pageable page);
 
-    public Page<LoanEntity> findByCreateDateOrNextDueDateAndUserId(LocalDate parse, LocalDate parse0, String userId, Pageable page);
+    public Page<LoanEntity> findAllByLoanType_NumMonthsAndUser_UserId(Integer newSearch, Integer newSearch0, String userId, Pageable page);
 
-    public Page<LoanEntity> findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitleAndUserId(String search, String search0, String search1, String userId, Pageable page);
-
-    public Page<LoanEntity> findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUserId(Double newSearch, Double newSearch0, Double newSearch1, Double newSearch2, Double newSearch3, String userId, Pageable page);
-
-    public Page<LoanEntity> findAllByLoanType_NumMonthsAndUserId(Integer newSearch, Integer newSearch0, String userId, Pageable page);
-
+    Page<LoanEntity> findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitleAndUser_UserId(String search, String search1, String search2, String userId, Pageable page);
 
 }

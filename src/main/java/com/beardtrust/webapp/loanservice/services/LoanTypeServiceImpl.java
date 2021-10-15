@@ -141,7 +141,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         CurrencyValue bal = calcBalance(c, loan.getApr());
         l.setPrincipal(c);
         l.setBalance(bal);
-        l.setUserId(id);
         return l;
     }
 

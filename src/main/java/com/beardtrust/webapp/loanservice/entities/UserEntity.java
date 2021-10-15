@@ -19,7 +19,7 @@ import java.util.UUID;
 @Table(name = "users")
 public class UserEntity implements Serializable {
 	@Id
-	@Column(unique = true)
+	@Column(name = "user_id", unique = true)
 	private String userId;
 	@Column(unique = true)
 	private String username;
@@ -34,30 +34,15 @@ public class UserEntity implements Serializable {
 	@Column(name = "dob")
 	private LocalDate dateOfBirth;
 	private String role;
+        @JsonIgnore
+	@OneToMany(mappedBy = "user")
+	private Set<FinancialAsset> assets;
 
 	/**
 	 * Instantiates a new UserEntity.
 	 */
 	public UserEntity() {
 		this.userId = UUID.randomUUID().toString();
-	}
-
-	/**
-	 * Gets user id.
-	 *
-	 * @return the user id
-	 */
-	public String getUserId() {
-		return userId;
-	}
-
-	/**
-	 * Sets user id.
-	 *
-	 * @param userId the user id
-	 */
-	public void setUserId(String userId) {
-		this.userId = userId;
 	}
 
 	/**

@@ -14,12 +14,8 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "loans")
-public class LoanEntity {
+public class LoanEntity extends FinancialAsset {
 
-    @Id
-    @Column(unique = true)
-    private final String loanId;
-    private String userId;
     @ManyToOne
     private LoanTypeEntity loanType;
     @Embedded
@@ -29,44 +25,22 @@ public class LoanEntity {
         @AttributeOverride(name = "isNegative", column = @Column(name = "principalIsNegative"))
     })
     private CurrencyValue principal;
-    private LocalDate createDate;
-    @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "cents", column = @Column(name = "balanceCents")),
-        @AttributeOverride(name = "dollars", column = @Column(name = "balanceDollars")),
-        @AttributeOverride(name = "isNegative", column = @Column(name = "balanceIsNegative"))
-    })
-    private CurrencyValue balance;
     private LocalDate nextDueDate;
     private LocalDate previousDueDate;
     private String valueTitle;
 
     public void setValueString(String valueTitle) {
-        this.valueTitle = balance.toString();
-    }
-
-    public String getLoanId() {
-        return loanId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+        this.valueTitle = getBalance().toString();
     }
 
     public LoanEntity() {
         System.out.println("building loan...");
-        loanId = UUID.randomUUID().toString();
         this.valueTitle = "0";
         this.loanType = new LoanTypeEntity();
         this.principal = new CurrencyValue();
-        this.balance = new CurrencyValue();
-        this.createDate = LocalDate.now();
-        this.nextDueDate = createDate.plusDays(30);
-        this.previousDueDate = createDate.minusDays(30);
+        this.setBalance(new CurrencyValue());
+        this.nextDueDate = LocalDate.now().plusDays(30);
+        this.previousDueDate = LocalDate.now().minusDays(30);
     }
 
     public LoanTypeEntity getLoanType() {
@@ -77,28 +51,12 @@ public class LoanEntity {
         this.loanType = loanType;
     }
 
-    public LocalDate getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDate createDate) {
-        this.createDate = createDate;
-    }
-
     public CurrencyValue getPrincipal() {
         return principal;
     }
 
     public void setPrincipal(CurrencyValue principal) {
         this.principal = principal;
-    }
-
-    public CurrencyValue getBalance() {
-        return balance;
-    }
-
-    public void setBalance(CurrencyValue currencyValue) {
-        this.balance = currencyValue;
     }
 
     public String getValueTitle() {
@@ -132,15 +90,13 @@ public class LoanEntity {
 
     @Override
     public String toString() {
-        return "\nloan Id: " + this.loanId
-                + "\nuser Id: " + this.userId
-                + "\nprincipal dollars: " + this.principal.getDollars()
+        return "\nprincipal dollars: " + this.principal.getDollars()
                 + "\nprincipal cents: " + this.principal.getCents()
                 + "\nprincipal isNegative: " + this.principal.isNegative()
                 + "\nAPR: " + this.loanType.getApr()
-                + "\nbalance dollars: " + this.balance.getDollars()
-                + "\nbalance cents: " + this.balance.getCents()
-                + "\nbalance isNegative: " + this.balance.isNegative()
+                + "\nbalance dollars: " + this.getBalance().getDollars()
+                + "\nbalance cents: " + this.getBalance().getCents()
+                + "\nbalance isNegative: " + this.getBalance().isNegative()
                 + "\nloanType Id: " + this.loanType.getId()
                 + "\nloanType typeName: " + this.loanType.getTypeName()
                 + "\nloanType description: " + this.loanType.getDescription()
