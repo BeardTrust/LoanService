@@ -43,22 +43,19 @@ public class LoanServiceImpl implements LoanService {
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
         System.out.println("Compiled page: " + page);
         System.out.println("Search param: " + search);
-        /*if (!("").equals(search)) {
-            if (isDouble(search)) {
-                System.out.println("search was a double");
-                Double newSearch = Double.parseDouble(search);
-                return repo.findAllByLoanTypeEntity_AprOrCurrencyValue_DollarsOrCurrencyValue_CentsAndUserId(newSearch, newSearch, newSearch, page);
-            } else if (isNumber(search)){
-                System.out.println("search was an Integer");
+        if (!("").equals(search)) {
+            if (isNumber(search)) {
+                System.out.println("search was a number");
                 Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanTypeEntity_NumMonthsOrPrincipalAndUserId(newSearch, newSearch, page);
-            } if (GenericValidator.isDate(search, "yyyy-MM", false)) {
+                Double doubleSearch = Double.parseDouble(search);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_Cents(doubleSearch, newSearch, newSearch, newSearch, newSearch, page);
+            } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
                 System.out.println("search was a date");
-                return repo.findByCreateDateOrNextDueDateAndUserId(LocalDate.parse(search), LocalDate.parse(search), page);
+                return repo.findByCreateDateOrNextDueDateOrPreviousDueDate(LocalDate.parse(search), LocalDate.parse(search), LocalDate.parse(search), page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionAndUserId(search, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitle(search, search, search, page);
             }
-        }*/
+        }
         System.out.println("Found in loan repo: " + repo.findAll(page));
         return repo.findAll(page);
     }
@@ -159,15 +156,10 @@ public class LoanServiceImpl implements LoanService {
         System.out.println("Search param: " + search);
         if (!("").equals(search)) {
             if (isDouble(search)) {
-                System.out.println("search was a double");
-                Double newSearch = Double.parseDouble(search);
-                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUser_UserId(newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
-            } else if (isNumber(search)) {
                 System.out.println("search was an Integer");
                 Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanType_NumMonthsAndUser_UserId(newSearch, newSearch, userId, page);
-            }
-            if (GenericValidator.isDate(search, "yyyy-MM", false)) {
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, userId, page);
+            } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
                 System.out.println("search was a date");
                 return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
             } else {
