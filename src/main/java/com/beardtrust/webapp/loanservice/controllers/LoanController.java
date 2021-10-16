@@ -78,7 +78,7 @@ public class LoanController {
     public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
             @RequestParam(name = "page", defaultValue = "0") int pageNum, 
             @RequestParam(name = "size", defaultValue = "10") int pageSize,  
-            @RequestParam(name = "sortBy", defaultValue = "loanId,asc") String[] sortBy, 
+            @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
             @RequestParam(name = "search", defaultValue = "") String search) {
         System.out.println("get my loans controller, search rcvd: " + search + ", sortby: " + sortBy);
         Pageable page = PageRequest.of(pageNum, pageSize);
