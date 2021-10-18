@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * The application's security configuration class.
@@ -23,11 +24,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final Environment environment;
     private final AuthorizationService authorizationService;
+    private final PasswordEncoder passwordEncoder;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public SecurityConfig(Environment environment, AuthorizationService authorizationService) {
+    public SecurityConfig(Environment environment, AuthorizationService authorizationService, PasswordEncoder passwordEncoder) {
         this.environment = environment;
+        this.passwordEncoder = passwordEncoder;
         this.authorizationService = authorizationService;
     }
 
@@ -38,7 +41,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors()
                 .and().authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/loans/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/loans/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/loantypes/**").permitAll()
                 .and().authorizeRequests().anyRequest().authenticated()

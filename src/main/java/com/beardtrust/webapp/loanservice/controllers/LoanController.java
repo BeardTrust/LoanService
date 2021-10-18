@@ -59,8 +59,8 @@ public class LoanController {
     }
 
     @GetMapping
-//    @PreAuthorize("hasAutority('admin')")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAuthority('admin')")
+//    @PreAuthorize("permitAll()")
     public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
         System.out.println("Found in loan controller: " + response.getBody().getContent().get(0).getUser().getUserId());
@@ -68,19 +68,21 @@ public class LoanController {
     }
     
     @GetMapping("/all")
-    @PreAuthorize("hasAutority('admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<List<LoanEntity>> getAllLoans() {//<-- Admin calls full list
         ResponseEntity<List<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoans(), HttpStatus.OK);
         return response;
     }
     
-    @PreAuthorize("permitAll()")
+//    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('admin') or principal == #userId")
     @GetMapping("/me")
     public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
             @RequestParam(name = "page", defaultValue = "0") int pageNum, 
             @RequestParam(name = "size", defaultValue = "10") int pageSize,  
             @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
-            @RequestParam(name = "search", defaultValue = "") String search) {
+            @RequestParam(name = "search", defaultValue = "") String search,
+            @RequestParam(name = "userId", defaultValue = "") String userId) {
         System.out.println("get my loans controller, search rcvd: " + search + ", sortby: " + sortBy);
         Pageable page = PageRequest.of(pageNum, pageSize);
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search), HttpStatus.OK);
@@ -89,14 +91,14 @@ public class LoanController {
     }
     
     @PutMapping()
-    @PreAuthorize("hasAutority('admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<String> updateLoan(@RequestBody LoanEntity a) {//<-- The entity with new/updated info
         ResponseEntity<String> response = new ResponseEntity<>(ls.updateLoan(a), HttpStatus.OK);
         return response;
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAutority('admin')")
+    @PreAuthorize("hasAuthority('admin')")
     public String deleteLoan(@PathVariable String id) {
         try {
             ls.deleteById(id);
