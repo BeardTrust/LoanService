@@ -63,6 +63,7 @@ public class LoanController {
     @PreAuthorize("permitAll()")
     public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
+        System.out.println("Found in loan controller: " + response.getBody().getContent().get(0).getUser().getUserId());
         return response;
     }
     

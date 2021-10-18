@@ -2,6 +2,7 @@ package com.beardtrust.webapp.loanservice.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -52,6 +53,15 @@ public class UserEntity implements Serializable {
 	 */
 	public String getUsername() {
 		return username;
+	}
+
+	/**
+	 * Gets user id.
+	 *
+	 * @return the user id
+	 */
+	public String getUserId() {
+		return userId;
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.beardtrust.webapp.loanservice.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -27,6 +28,7 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 	@Id
 	private String id;
 	@ManyToOne
+	@JoinTable(name = "users")
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
 	@Embedded

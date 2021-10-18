@@ -56,7 +56,7 @@ public class LoanServiceImpl implements LoanService {
                 return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitle(search, search, search, page);
             }
         }
-        System.out.println("Found in loan repo: " + repo.findAll(page));
+        System.out.println("Found in loan repo: " + repo.findAll(page).getContent().get(0).toString());
         return repo.findAll(page);
     }
 
