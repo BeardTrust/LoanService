@@ -2,6 +2,7 @@ package com.beardtrust.webapp.loanservice.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Table(name = "users")
 public class UserEntity implements Serializable {
 	@Id
-	@Column(unique = true)
+	@Column(name = "user_id", unique = true)
 	private String userId;
 	@Column(unique = true)
 	private String username;
@@ -34,6 +35,9 @@ public class UserEntity implements Serializable {
 	@Column(name = "dob")
 	private LocalDate dateOfBirth;
 	private String role;
+        @JsonIgnore
+	@OneToMany(mappedBy = "user")
+	private Set<FinancialAsset> assets;
 
 	/**
 	 * Instantiates a new UserEntity.
@@ -43,30 +47,21 @@ public class UserEntity implements Serializable {
 	}
 
 	/**
-	 * Gets user id.
-	 *
-	 * @return the user id
-	 */
-	public String getUserId() {
-		return userId;
-	}
-
-	/**
-	 * Sets user id.
-	 *
-	 * @param userId the user id
-	 */
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	/**
 	 * Gets username.
 	 *
 	 * @return the username
 	 */
 	public String getUsername() {
 		return username;
+	}
+
+	/**
+	 * Gets user id.
+	 *
+	 * @return the user id
+	 */
+	public String getUserId() {
+		return userId;
 	}
 
 	/**

@@ -28,15 +28,16 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Autowired
     LoanTypeRepository repo;
+    
+    public LoanTypeEntity getNewLoanType() {
+        return new LoanTypeEntity();
+    }
 
     @Override
     @Transactional
     public void save(LoanTypeEntity loanType) {
+        System.out.println("incoming loan type id: " + loanType.getId());
         loanType.setActiveStatus(true);
-        if(loanType.getId() == null){
-            loanType.setId(UUID.randomUUID().toString());
-        }
-
         repo.save(loanType);
     }
 
@@ -136,25 +137,24 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         c.setDollars(1000);
         c.setCents(0);
         LoanEntity l = new LoanEntity();
-        l.setCurrencyValue(c);
         l.setLoanType(loan);
-        Integer prince = principalCalc(c, loan.getApr());
-        l.setPrincipal(prince);
-        l.setCurrencyValue(c);
-        l.setUserId(id);
+        CurrencyValue bal = calcBalance(c, loan.getApr());
+        l.setPrincipal(c);
+        l.setBalance(bal);
         return l;
     }
 
-    public Integer principalCalc(CurrencyValue c, Double apr) {
+    public CurrencyValue calcBalance(CurrencyValue c, Double apr) {
         CurrencyValue c2 = new CurrencyValue();
+        c.setNegative(false);
         Integer p = 0;
         double v = c.getDollars() + c.getCents();
         double a = v * (1 + apr/100);
         int ce = (int) (a - Math.floor(a));
         int dol = (int) (a - (a - Math.floor(a)));
-        System.out.println("making principal with: $" + dol + " and $0." + ce);
+        System.out.println("making balance with: $" + dol + " and $0." + ce);
         c2.add(dol, ce);
-        return c2.getDollars() + c2.getCents();
+        return c2;
     }
 
 }

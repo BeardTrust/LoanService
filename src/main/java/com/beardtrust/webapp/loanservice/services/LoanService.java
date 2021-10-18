@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
+@Service
 public interface LoanService {
 	
 	public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search);
@@ -20,5 +22,7 @@ public interface LoanService {
 	public LoanEntity save(LoanEntity l);
         
         public String updateLoan(LoanEntity l);
+        
+        public LoanEntity getNewLoan();
 
 }

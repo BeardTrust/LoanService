@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * The application's security configuration class.
@@ -21,27 +22,30 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final Environment environment;
-	private final AuthorizationService authorizationService;
+    private final Environment environment;
+    private final AuthorizationService authorizationService;
+    private final PasswordEncoder passwordEncoder;
 
-	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-	@Autowired
-	public SecurityConfig(Environment environment, AuthorizationService authorizationService) {
-		this.environment = environment;
-		this.authorizationService = authorizationService;
-	}
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    public SecurityConfig(Environment environment, AuthorizationService authorizationService, PasswordEncoder passwordEncoder) {
+        this.environment = environment;
+        this.passwordEncoder = passwordEncoder;
+        this.authorizationService = authorizationService;
+    }
 
-	@Description("Configure HTTP Security")
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable();
-		http.cors()
-				.and().authorizeRequests()
-				.antMatchers(HttpMethod.POST, "/loans/**").permitAll()
-				.antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
-				.and().authorizeRequests().anyRequest().authenticated()
-				.and()
-				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
-		http.headers().frameOptions().disable();
-	}
+    @Description("Configure HTTP Security")
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+        http.cors()
+                .and().authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/loans/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/loantypes/**").permitAll()
+                .and().authorizeRequests().anyRequest().authenticated()
+                .and()
+                .addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
+        http.headers().frameOptions().disable();
+    }
 }
