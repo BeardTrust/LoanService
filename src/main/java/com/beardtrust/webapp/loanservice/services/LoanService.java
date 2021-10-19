@@ -25,4 +25,6 @@ public interface LoanService {
         
         public LoanEntity getNewLoan();
 
+        public void calculateMinDue();
+
 }

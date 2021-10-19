@@ -111,7 +111,7 @@ public class CurrencyValue implements Serializable, Comparable<CurrencyValue> {
 	 */
 	public static CurrencyValue valueOf(Double value) {
 		int dollarsValue = (int) ((value * 100) / 100);
-		int centsValue = (int) ((value * 100) % 100);
+		int centsValue = (int) Math.ceil((value * 100) % 100);
 		boolean isNegative = dollarsValue < 0 || centsValue < 0;
 		return new CurrencyValue(isNegative, dollarsValue, centsValue);
 	}

@@ -107,4 +107,10 @@ public class LoanController {
             return "Error finding Entity: " + e;
         }
     }
+
+    @GetMapping("/calc")
+    @PreAuthorize("permitAll()")
+    public void calculateLoan() {
+        ls.calculateMinDue();
+    }
 }

@@ -56,7 +56,7 @@ public class LoanServiceImpl implements LoanService {
                 return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitle(search, search, search, page);
             }
         }
-        System.out.println("Found in loan repo: " + repo.findAll(page).getContent().get(0).toString());
+//        System.out.println("Found in loan repo: " + repo.findAll(page).getContent().get(0).toString());
         return repo.findAll(page);
     }
 
@@ -169,5 +169,13 @@ public class LoanServiceImpl implements LoanService {
         System.out.println("generic search, found:" + repo.findAllByUser_UserId(userId, page).getContent());
         System.out.println("UserId searched by: " + userId);
         return repo.findAllByUser_UserId(userId, page);
+    }
+
+    public void calculateMinDue() {
+     List<LoanEntity> l = repo.findAll();
+        for (int i = 0; i < l.size(); i++) {
+            LoanEntity l1 = l.get(i);
+            l1.calculateMinDue();
+        }
     }
 }
