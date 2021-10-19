@@ -49,6 +49,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     @Override
     public List<LoanTypeEntity> getAll() {
         log.trace("Start LoanTypeService.getAll()");
+        log.trace("End LoanTypeService.getAll()");
         return repo.findAll();
     }
 
@@ -72,16 +73,13 @@ public class LoanTypeServiceImpl implements LoanTypeService {
                     Double newSearch = Double.parseDouble(search);
                     return repo.findAllByApr(newSearch, page);
                 } else {
-                    System.out.println("search was a number");
                     Integer newSearch = Integer.parseInt(search);
                     return repo.findAllByNumMonths(newSearch, newSearch, page);
                 }
             } else {
-                System.out.println("generic search parameter");
                 return repo.findAllByActiveStatusIsTrueAndIdOrTypeNameIgnoreCaseOrDescriptionContainsIgnoreCase(search, search, search, page);
             }
         }
-        System.out.println("find all");
         log.trace("End LoanTypeService.getAllLoanTypesPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
         return repo.findAllByActiveStatusIsTrue(page);
     }
@@ -117,7 +115,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Override
     public LoanTypeEntity getSpecificLoanTypeEntity(String id) {
-        //System.out.println("get specific loantype request. inbound id: " + id);
         log.trace("Start LoanTypeService.getSpecificLoanTypeEntity(" + id + ")");
         LoanTypeEntity lte = new LoanTypeEntity();
         lte.setApr(100.0);
@@ -127,7 +124,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         lte.setTypeName("ERROR");
         try {
             Optional<LoanTypeEntity> ol = repo.findById(id);
-            System.out.println("loan type entity found: " + ol.get());
             lte.setId(id);
             lte.setApr(ol.get().getApr());
             lte.setActiveStatus(true);
@@ -136,16 +132,15 @@ public class LoanTypeServiceImpl implements LoanTypeService {
             lte.setTypeName(ol.get().getTypeName());
             return lte;
         } catch (Exception e) {
-            System.out.println("exception caught: " + e.getMessage());
+            log.info("Exception LoanTypeService.getSpecificLoanTypeEntity(" + id + ") \n"
+            + e.getMessage());
         }
-        //System.out.println("returning: " + lte);
         log.trace("End LoanTypeService.getSpecificLoanTypeEntity(" + id + ")");
         return lte;
     }
 
     @Override
     public LoanEntity creditCheck(LoanTypeEntity loan, String id) {
-        //System.out.println("attempting credit check");
         log.trace("Start LoanTypeService.creditCheck(" + loan + ", " + id + ")");
         CurrencyValue c = new CurrencyValue();
         c.setDollars(1000);
@@ -169,7 +164,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         double a = v * (1 + apr/100);
         int ce = (int) (a - Math.floor(a));
         int dol = (int) (a - (a - Math.floor(a)));
-        //System.out.println("making principal with: $" + dol + " and $0." + ce);
         c2.add(dol, ce);
         log.trace("End LoanTypeService.principalCalc(" + c + ", " + apr + ")");
         return c2.getDollars() + c2.getCents();
