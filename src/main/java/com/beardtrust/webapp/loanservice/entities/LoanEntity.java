@@ -1,6 +1,7 @@
 package com.beardtrust.webapp.loanservice.entities;
 
 import java.time.LocalDate;
+import java.util.UUID;
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
@@ -42,11 +43,13 @@ public class LoanEntity extends FinancialAsset {
     private boolean hasPaid;
 
     public void setValueString(String valueTitle) {
-        this.minMonthFee = getBalance().toString();
+        this.minMonthFee = valueTitle;
     }
 
     public LoanEntity() {
         System.out.println("building loan...");
+        this.setCreateDate(LocalDate.now());
+        this.setId(UUID.randomUUID().toString());
         this.minMonthFee = "0";
         this.loanType = new LoanTypeEntity();
         this.principal = new CurrencyValue();
@@ -111,25 +114,45 @@ public class LoanEntity extends FinancialAsset {
         this.minDue = c;
     }
 
+    public CurrencyValue getLateFee() {
+        return lateFee;
+    }
+
+    public void setLateFee(CurrencyValue lateFee) {
+        this.lateFee = lateFee;
+    }
+
+    public String getMinMonthFee() {
+        return minMonthFee;
+    }
+
+    public void setMinMonthFee(String minMonthFee) {
+        this.minMonthFee = minMonthFee;
+    }
+
     public void calculateMinDue() {
         System.out.println("parsing balance: " + this.getBalance().toString());
         Double temp = (double) this.getBalance().getDollars() + (double) (this.getBalance().getCents() / 100);
         temp /= this.loanType.getNumMonths();
         System.out.println("min due temp value set: " + (int) Math.ceil(temp));
         System.out.println("min due temp value parsed: " + CurrencyValue.valueOf(temp));
-        lateFee.setDollars(10);
         this.minDue = CurrencyValue.valueOf(temp);
         minMonthFee = minDue.toString();
-        System.out.println("Making payment.");
-        minDue.setNegative(false);
-        CurrencyValue payment = new CurrencyValue(true, 5000, 0);
-        makePayment(payment);
     }
 
     public void resetMinDue() {
+        System.out.println("resetting minimum due...");
+        this.minDue.valueOf(Double.parseDouble(minMonthFee));
+        minDue.setNegative(false);
         if (this.minDue.compareTo(this.getBalance()) == 1) {
+            System.out.println("minimum due more than balance...");
             minDue.setDollars(getBalance().getDollars());
             minDue.setCents(getBalance().getCents());
+        }
+        if (hasPaid) {
+            System.out.println("Already paid, minimum due is 0...");
+            minDue.setDollars(0);
+            minDue.setCents(0);
         }
     }
 
@@ -154,7 +177,8 @@ public class LoanEntity extends FinancialAsset {
     payment source
 
      */
-    public void makePayment(CurrencyValue payment) {
+    public CurrencyValue makePayment(CurrencyValue payment) {
+        minDue.setNegative(false);
         CurrencyValue temp;
         System.out.println("Incoming payment: " + payment.toString());
         if (lateFee.getDollars() > 0 || lateFee.getCents() > 0) {
@@ -164,9 +188,8 @@ public class LoanEntity extends FinancialAsset {
             payment.add(temp);
             System.out.println("payment after late fee: " + payment);
         }
-        temp = payment;
-        temp.setNegative(false);
-        if (temp.compareTo(this.getBalance()) == 1) {//paynment is greater
+        payment.setNegative(false);
+        if (payment.compareTo(this.getBalance()) == 1) {//paynment is greater
             payment.setNegative(true);
             System.out.println("paying more than balance..." + payment);
             System.out.println("balance: " + this.getBalance());
@@ -184,7 +207,10 @@ public class LoanEntity extends FinancialAsset {
             payment.setNegative(false);
             System.out.println("resulting balance: " + this.getBalance());
             System.out.println("remaining payment: " + payment);
+            hasPaid = true;
+            return payment;
         } else {
+            payment.setNegative(true);
             System.out.println("balance paid on: " + this.getBalance());
             System.out.println("amount paying: " + payment);
             minDue.add(payment);
@@ -194,10 +220,14 @@ public class LoanEntity extends FinancialAsset {
         }
         int temp2 = minDue.getDollars() + minDue.getCents();
         if (temp2 <= 0) {
+            minDue.setDollars(0);
+            minDue.setCents(0);
+            minDue.setNegative(false);
             hasPaid = true;
+            checkDate();
         }
         System.out.println("Loan haspaid status: " + hasPaid);
-
+    return payment;
     }
 
     public boolean isHasPaid() {

@@ -171,11 +171,27 @@ public class LoanServiceImpl implements LoanService {
         return repo.findAllByUser_UserId(userId, page);
     }
 
+    public CurrencyValue makePayment(CurrencyValue c, String id) {
+        CurrencyValue returnValue = new CurrencyValue(false, 0, 0);
+        try {
+            LoanEntity l = repo.findById(id).get();
+            returnValue = l.makePayment(c);
+            repo.save(l);
+            l.resetMinDue();
+            repo.save(l);
+            return returnValue;
+        } catch (Exception e) {
+            System.out.println("Exception caught: " + e);
+            return null;
+        }
+    }
+
     public void calculateMinDue() {
      List<LoanEntity> l = repo.findAll();
         for (int i = 0; i < l.size(); i++) {
             LoanEntity l1 = l.get(i);
             l1.calculateMinDue();
+            repo.save(l1);
         }
     }
 }
