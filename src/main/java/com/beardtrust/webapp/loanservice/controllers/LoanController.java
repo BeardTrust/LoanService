@@ -40,11 +40,11 @@ public class LoanController {
     }
     
     @PreAuthorize("permitAll()")
-    @GetMapping("/new")
-    public ResponseEntity<LoanEntity> getNewUUID() {
+    @PostMapping("/new")
+    public ResponseEntity<LoanEntity> getNewUUID(@RequestBody String userId) {
         log.trace("Get new endpoint reached...");
         String res = UUID.randomUUID().toString();
-        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.getNewLoan(), HttpStatus.OK);
+        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.getNewLoan(userId), HttpStatus.OK);
         log.info("Outbound entity: " + response);
         return response;
     }

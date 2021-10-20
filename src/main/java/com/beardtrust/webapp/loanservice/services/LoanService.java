@@ -24,7 +24,7 @@ public interface LoanService {
         
         public String updateLoan(LoanEntity l);
         
-        public LoanEntity getNewLoan();
+        public LoanEntity getNewLoan(String id);
 
         public void calculateMinDue();
 

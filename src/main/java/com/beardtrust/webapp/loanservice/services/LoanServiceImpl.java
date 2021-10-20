@@ -4,6 +4,7 @@ import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
+import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,14 +25,18 @@ public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository repo;
     private final LoanTypeRepository ltr;
+    private final UserRepository ur;
 
-    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr) {
+    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr, UserRepository ur) {
         this.repo = repo;
         this.ltr = ltr;
+        this.ur = ur;
     }
 
-    public LoanEntity getNewLoan() {
-        return new LoanEntity();
+    public LoanEntity getNewLoan(String userId) {
+        LoanEntity l = new LoanEntity();
+        l.setUser(ur.findById(userId).get());
+        return l;
     }
 
     @Override
@@ -94,7 +99,7 @@ public class LoanServiceImpl implements LoanService {
 
     public LoanEntity save(LoanEntity l) {
         try {
-            System.out.println("Attempting to save: " + l.toString());
+            System.out.println("Attempting to save: " + l);
             repo.save(l);
         } catch (Exception e) {
             System.out.println("Unable to save");
