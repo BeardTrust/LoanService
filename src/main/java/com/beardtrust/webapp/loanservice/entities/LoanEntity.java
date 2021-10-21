@@ -126,8 +126,8 @@ public class LoanEntity extends FinancialAsset {
         return minMonthFee;
     }
 
-    public void setMinMonthFee(String minMonthFee) {
-        this.minMonthFee = minMonthFee;
+    public void setMinMonthFee() {
+        this.minMonthFee = this.minDue.toString();
     }
 
     public void calculateMinDue() {
@@ -137,6 +137,7 @@ public class LoanEntity extends FinancialAsset {
         System.out.println("min due temp value set: " + (int) Math.ceil(temp));
         System.out.println("min due temp value parsed: " + CurrencyValue.valueOf(temp));
         this.minDue = CurrencyValue.valueOf(temp);
+        setMinMonthFee();
         minMonthFee = minDue.toString();
     }
 
@@ -227,6 +228,7 @@ public class LoanEntity extends FinancialAsset {
             checkDate();
         }
         System.out.println("Loan haspaid status: " + hasPaid);
+        resetMinDue();
     return payment;
     }
 
