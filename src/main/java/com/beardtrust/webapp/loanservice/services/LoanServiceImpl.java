@@ -181,8 +181,13 @@ public class LoanServiceImpl implements LoanService {
         try {
             LoanEntity l = repo.findById(id).get();
             returnValue = l.makePayment(c);
+            if (l.getMinDue().isNegative()) {
+                System.out.println("Min Due Negative");
+                l.getMinDue().setNegative(false);
+                l.getMinDue().setDollars(0);
+                l.getMinDue().setCents(0);
+            }
             repo.save(l);
-            l.resetMinDue();
             repo.save(l);
             return returnValue;
         } catch (Exception e) {

@@ -228,7 +228,6 @@ public class LoanEntity extends FinancialAsset {
             checkDate();
         }
         System.out.println("Loan haspaid status: " + hasPaid);
-        resetMinDue();
     return payment;
     }
 
