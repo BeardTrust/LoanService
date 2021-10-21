@@ -8,7 +8,7 @@ management:
   server:
     port: ${ACTPORT:0}
 gateway:
-  ip: ${GATEWAY:192.168.0.10}
+  ip: ${GATEWAY:localhost}
 spring:
   application:
     name: ${NAME:loans-service}
@@ -18,7 +18,7 @@ spring:
       settings:
         web-allow-others: true
   datasource:
-    url: jdbc:mariadb://beardtrustdb.czyy1xbuk4j2.us-east-2.rds.amazonaws.com/BeardTrust_Test
+    url: jdbc:mariadb://beardtrustdb.czyy1xbuk4j2.us-east-2.rds.amazonaws.com/BeardTrust
     username: basileios
     password: EBzrA8x6OcRfZL00dzG9uND6yXANpMetzr7K
     driver-class-name: org.mariadb.jdbc.Driver
