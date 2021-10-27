@@ -1,10 +1,15 @@
 package com.beardtrust.webapp.loanservice.controllers;
 
+import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.services.LoanService;
 import java.util.List;
+import java.util.UUID;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,8 +35,19 @@ public class LoanController {
 
     private final LoanService ls;
 
-    public LoanController(LoanService ls) {
+    @Autowired
+    public LoanController(@Qualifier("loanServiceImpl") LoanService ls) {
         this.ls = ls;
+    }
+    
+    @PreAuthorize("permitAll()")
+    @PostMapping("/new")
+    public ResponseEntity<LoanEntity> getNewUUID(@RequestBody String userId) {
+        log.trace("Get new endpoint reached...");
+        String res = UUID.randomUUID().toString();
+        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.getNewLoan(userId), HttpStatus.OK);
+        log.info("Outbound entity: " + response);
+        return response;
     }
 
     @PostMapping()
@@ -43,6 +59,18 @@ public class LoanController {
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
         log.trace("End LoanController.registerLoan(" + loan.toString() + ")");
 		return response;
+    }
+
+    @PreAuthorize("hasRole('admin') or principal == #userId")
+    @PostMapping("/{userId}/{id}")//<-- Loan to be paid on
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<CurrencyValue> payOnLoan(@PathVariable String id, @PathVariable String userId, @RequestBody CurrencyValue c) {
+        log.trace("Pay on loan endpoint reached...");
+        log.debug(("Loan id received: " + id + ". UserId received: " + userId + ". CurrencyValue received: " + c.toString()));
+        ResponseEntity<CurrencyValue> response = new ResponseEntity<>(ls.makePayment(c, id), HttpStatus.ACCEPTED);
+        return response;
+
     }
 
     @GetMapping
@@ -66,21 +94,21 @@ public class LoanController {
         log.trace("End LoanController.getAllLoans()");
         return response;
     }
-
-
+    
+//    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('admin') or principal == #userId")
     @GetMapping("/me")
-    @PreAuthorize("hasAuthority('admin')")
-    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(
-            @RequestParam(name = "page", defaultValue = "0") int pageNum, 
-            @RequestParam(name = "size", defaultValue = "10") int pageSize,  
-            @RequestParam(name = "sortBy", defaultValue = "loanId,asc") String[] sortBy, 
-            @RequestParam(name = "search", defaultValue = "") String search) {
-        log.trace("Start LoanController.getAllMyLoansPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
+    public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
+            @RequestParam(name = "page", defaultValue = "0") int pageNum,
+            @RequestParam(name = "size", defaultValue = "10") int pageSize,
+            @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
+            @RequestParam(name = "search", defaultValue = "") String search,
+            @RequestParam(name = "userId", defaultValue = "") String userId) {
+        log.trace("Get my loans endpoint reached...");
         Pageable page = PageRequest.of(pageNum, pageSize);
-        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search), HttpStatus.OK);
-        log.trace("End LoanController.getAllMyLoansPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
+        log.debug(("Page item received: " + page));
+        log.trace(("Returning from get my loans controller"));
+        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search, userId), HttpStatus.OK);
         return response;
 
     }
@@ -111,5 +139,11 @@ public class LoanController {
                     "     " + e);
             return "Error finding Entity: " + e;
         }
+    }
+
+    @GetMapping("/calc")
+    @PreAuthorize("permitAll()")
+    public void calculateLoan() {
+        ls.calculateMinDue();
     }
 }

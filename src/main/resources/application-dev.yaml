@@ -32,6 +32,13 @@ authorization:
 token:
   secret: aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj04WnEzS0NCZWQ1UQo=
   expiration: 864000000
+<<<<<<< HEAD
 logging:
   level:
     web: DEBUG
+=======
+  logging:
+    file: /logs/loan-service-logging.log
+    level:
+      web: Info
+>>>>>>> feature/BTLLC-61-make-loan-payments

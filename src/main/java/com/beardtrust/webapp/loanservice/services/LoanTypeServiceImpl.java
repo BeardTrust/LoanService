@@ -7,8 +7,8 @@ import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
-
 import lombok.extern.slf4j.Slf4j;
+import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +31,12 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Autowired
     LoanTypeRepository repo;
+    @Autowired
+    UserRepository ur;
+    
+    public LoanTypeEntity getNewLoanType() {
+        return new LoanTypeEntity();
+    }
 
     @Override
     @Transactional
@@ -41,7 +47,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
             loanType.setId(UUID.randomUUID().toString());
             log.trace("Create New Loan Type with id:" + loanType.getId());
         }
-
         repo.save(loanType);
         log.trace("End LoanTypeService.save(" + loanType + ")");
     }
@@ -87,6 +92,9 @@ public class LoanTypeServiceImpl implements LoanTypeService {
     private List<Sort.Order> parseOrders(String[] sortBy) {
         log.trace("Start LoanTypeService.parseOrders(" + sortBy + ")");
         List<Sort.Order> orders = new ArrayList<>();
+        for (int i = 0; i < sortBy.length; i++) {
+            System.out.println("sort order received: " + sortBy[i]);
+        }
 
         if (sortBy[0].contains(",")) {
             for (String sortOrder : sortBy) {
@@ -96,7 +104,6 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         } else {
             orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
         }
-
         log.trace("End LoanTypeService.parseOrders(" + sortBy + ")");
         return orders;
     }
@@ -146,27 +153,28 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         c.setDollars(1000);
         c.setCents(0);
         LoanEntity l = new LoanEntity();
-        l.setCurrencyValue(c);
         l.setLoanType(loan);
-        Integer prince = principalCalc(c, loan.getApr());
-        l.setPrincipal(prince);
-        l.setCurrencyValue(c);
-        l.setUserId(id);
+        l.setUser(ur.findById(id).get());
+        CurrencyValue bal = calcBalance(c, loan.getApr());
+        l.setPrincipal(c);
+        l.setBalance(bal);
+        l.calculateMinDue();
         log.trace("End LoanTypeService.creditCheck(" + loan + ", " + id + ")");
         return l;
     }
 
-    public Integer principalCalc(CurrencyValue c, Double apr) {
+    public CurrencyValue calcBalance(CurrencyValue c, Double apr) {
         log.trace("Start LoanTypeService.principalCalc(" + c + ", " + apr + ")");
         CurrencyValue c2 = new CurrencyValue();
+        c.setNegative(false);
         Integer p = 0;
         double v = c.getDollars() + c.getCents();
         double a = v * (1 + apr/100);
         int ce = (int) (a - Math.floor(a));
         int dol = (int) (a - (a - Math.floor(a)));
-        c2.add(dol, ce);
         log.trace("End LoanTypeService.principalCalc(" + c + ", " + apr + ")");
-        return c2.getDollars() + c2.getCents();
+        c2.add(dol, ce);
+        return c2;
     }
 
 }

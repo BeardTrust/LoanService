@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +24,8 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 
 @RestController
-@Slf4j
 @RequestMapping("/loantypes")
+@Slf4j
 public class LoanTypeController {
 
     LoanTypeService loanTypeService;
@@ -32,6 +33,15 @@ public class LoanTypeController {
     @Autowired
     public LoanTypeController(LoanTypeService loanTypeService) {
         this.loanTypeService = loanTypeService;
+    }
+    
+    @PreAuthorize("permitAll()")
+    @GetMapping("/new")
+    public ResponseEntity<LoanTypeEntity> getNewUUID() {
+        log.trace("Get new endpoint reached...");
+        ResponseEntity<LoanTypeEntity> response = new ResponseEntity<>(loanTypeService.getNewLoanType(), HttpStatus.OK);
+        log.info("Outbound loan type entity: " + response);
+        return response;
     }
 
     @PostMapping()
