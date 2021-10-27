@@ -33,8 +33,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.passwordEncoder = passwordEncoder;
         this.authorizationService = authorizationService;
     }
-
-<<<<<<< HEAD
 	@Description("Configure HTTP Security")
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -50,21 +48,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
 		http.headers().frameOptions().disable();
 	}
-=======
-    @Description("Configure HTTP Security")
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.cors()
-                .and().authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/loans/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/loans/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/loantypes/**").permitAll()
-                .and().authorizeRequests().anyRequest().authenticated()
-                .and()
-                .addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
-        http.headers().frameOptions().disable();
-    }
->>>>>>> feature/BTLLC-61-make-loan-payments
 }
