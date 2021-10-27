@@ -14,7 +14,7 @@ public interface LoanRepository extends JpaRepository<LoanEntity, String> {
 
     public Page<LoanEntity> findByCreateDate(LocalDate parse, Pageable page);
     
-    public Page<LoanEntity> findAllByUser_UserId(String userId, Pageable page);
+    public Page<LoanEntity> findByUser_UserId(String userId, Pageable page);
 
     public Page<LoanEntity> findByCreateDateOrNextDueDateAndUser_UserId(LocalDate parse, LocalDate parse0, String userId, Pageable page);
 

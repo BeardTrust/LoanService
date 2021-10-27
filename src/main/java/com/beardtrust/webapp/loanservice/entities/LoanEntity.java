@@ -47,7 +47,6 @@ public class LoanEntity extends FinancialAsset {
     }
 
     public LoanEntity() {
-        System.out.println("building loan...");
         this.setCreateDate(LocalDate.now());
         this.setId(UUID.randomUUID().toString());
         this.minMonthFee = "0";
@@ -131,11 +130,11 @@ public class LoanEntity extends FinancialAsset {
     }
 
     public void calculateMinDue() {
-        System.out.println("parsing balance: " + this.getBalance().toString());
+//        System.out.println("parsing balance: " + this.getBalance().toString());
         Double temp = (double) this.getBalance().getDollars() + (double) (this.getBalance().getCents() / 100);
         temp /= this.loanType.getNumMonths();
-        System.out.println("min due temp value set: " + (int) Math.ceil(temp));
-        System.out.println("min due temp value parsed: " + CurrencyValue.valueOf(temp));
+//        System.out.println("min due temp value set: " + (int) Math.ceil(temp));
+//        System.out.println("min due temp value parsed: " + CurrencyValue.valueOf(temp));
         this.minDue = CurrencyValue.valueOf(temp);
         setMinMonthFee();
         minMonthFee = minDue.toString();

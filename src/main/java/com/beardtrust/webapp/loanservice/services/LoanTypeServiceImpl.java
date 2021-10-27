@@ -85,6 +85,9 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     private List<Sort.Order> parseOrders(String[] sortBy) {
         List<Sort.Order> orders = new ArrayList<>();
+        for (int i = 0; i < sortBy.length; i++) {
+            System.out.println("sort order received: " + sortBy[i]);
+        }
 
         if (sortBy[0].contains(",")) {
             for (String sortOrder : sortBy) {
@@ -94,7 +97,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         } else {
             orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
         }
-
+        System.out.println("loan type orders: " + orders);
         return orders;
     }
 

@@ -11,6 +11,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort.Order;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -143,22 +145,12 @@ public class LoanServiceImpl implements LoanService {
         return searchBalance;
     }
 
-    @Override
-    public Page<LoanEntity> getAllMyLoansPage(int n, int s, String[] sortBy, String search) {
-        String sortName = sortBy[0];
-        String sortDir = sortBy[1];
-        String userId = "";
-        if (sortBy.length >= 3) {
-            userId = sortBy[2];
-        }
+    public Page<LoanEntity> getAllMyLoansPage(int n, int s, String[] sortBy, String search, String userId) {
         System.out.println("Attempting to find my loans");
-        List<Sort.Order> orders = new ArrayList();
-        orders.add(new Sort.Order(getDirection(sortDir), sortName));
-        System.out.println("Inbound sort: " + sortName + " " + sortDir);
-        System.out.println("Combined orders: " + orders);
+        List<Sort.Order> orders = parseOrders(sortBy);
+        System.out.println("Inbound sort: " + sortBy.length);
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
-        System.out.println("Compiled page: " + page);
-        System.out.println("Search param: " + search);
+        System.out.println("page orders made: " + page.getSort());
         if (!("").equals(search)) {
             if (isDouble(search)) {
                 System.out.println("search was an Integer");
@@ -171,9 +163,9 @@ public class LoanServiceImpl implements LoanService {
                 return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitleAndUser_UserId(search, search, search, userId, page);
             }
         }
-        System.out.println("generic search, found:" + repo.findAllByUser_UserId(userId, page).getContent());
+//        System.out.println("generic search, found:" + repo.findAllByUser_UserId(userId, page).getContent());
         System.out.println("UserId searched by: " + userId);
-        return repo.findAllByUser_UserId(userId, page);
+        return repo.findByUser_UserId(userId, page);
     }
 
     public CurrencyValue makePayment(CurrencyValue c, String id) {
@@ -203,5 +195,30 @@ public class LoanServiceImpl implements LoanService {
             l1.calculateMinDue();
             repo.save(l1);
         }
+    }
+
+    private Sort.Direction getSortDirection(String direction) {
+        if (direction.equals("asc")) {
+            return Sort.Direction.ASC;
+        } else if (direction.equals("desc")) {
+            return Sort.Direction.DESC;
+        }
+
+        return Sort.Direction.ASC;
+    }
+
+    private List<Sort.Order> parseOrders(String[] sortBy) {
+        List<Sort.Order> orders = new ArrayList<>();
+
+        if (sortBy[0].contains(",")) {
+            for (String sortOrder : sortBy) {
+                String[] _sortBy = sortOrder.split(",");
+                orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+            }
+        } else {
+            orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
+        }
+        System.out.println("loan orders: " + orders);
+        return orders;
     }
 }

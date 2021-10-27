@@ -54,15 +54,18 @@ public class LoanController {
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan) {
-        System.out.println("Attempting to post, rcvd: " + loan.toString());
+        log.trace("Register new loan endpoint reached...");
+        log.debug("Loan received for registration: " + loan);
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
+        log.trace("Returning from new loan registration");
 		return response;
     }
 
     @PreAuthorize("hasRole('admin') or principal == #userId")
     @PostMapping("/{userId}/{id}")//<-- Loan to be paid on
     public ResponseEntity<CurrencyValue> payOnLoan(@PathVariable String id, @PathVariable String userId, @RequestBody CurrencyValue c) {
-        System.out.println("Attempting to pay on a loan, rcvd: " + c);
+        log.trace("Pay on loan endpoint reached...");
+        log.debug(("Loan id received: " + id + ". UserId received: " + userId + ". CurrencyValue received: " + c.toString()));
         ResponseEntity<CurrencyValue> response = new ResponseEntity<>(ls.makePayment(c, id), HttpStatus.ACCEPTED);
         return response;
 
@@ -72,8 +75,11 @@ public class LoanController {
     @PreAuthorize("hasAuthority('admin')")
 //    @PreAuthorize("permitAll()")
     public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {//<-- Admin calls full list
+        log.trace("Get all loans endpoint reached...");
+        log.debug("Get all received: pageNum: " + pageNum + ". pageSize: " + pageSize + ". sortName: " + sortName + ". sortDir: " + sortDir + ". search: " + search);
         ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
-        System.out.println("Found in loan controller: " + response.getBody().getContent().get(0).getUser().getUserId());
+        log.debug("Get all returning: " + response);
+        log.trace(("returning from get all loans..."));
         return response;
     }
     
@@ -88,14 +94,16 @@ public class LoanController {
     @PreAuthorize("hasRole('admin') or principal == #userId")
     @GetMapping("/me")
     public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
-            @RequestParam(name = "page", defaultValue = "0") int pageNum, 
-            @RequestParam(name = "size", defaultValue = "10") int pageSize,  
+            @RequestParam(name = "page", defaultValue = "0") int pageNum,
+            @RequestParam(name = "size", defaultValue = "10") int pageSize,
             @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
             @RequestParam(name = "search", defaultValue = "") String search,
             @RequestParam(name = "userId", defaultValue = "") String userId) {
-        System.out.println("get my loans controller, search rcvd: " + search + ", sortby: " + sortBy);
+        log.trace("Get my loans endpoint reached...");
         Pageable page = PageRequest.of(pageNum, pageSize);
-        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search), HttpStatus.OK);
+        log.debug(("Page item received: " + page));
+        log.trace(("Returning from get my loans controller"));
+        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllMyLoansPage(pageNum, pageSize, sortBy, search, userId), HttpStatus.OK);
         return response;
 
     }
