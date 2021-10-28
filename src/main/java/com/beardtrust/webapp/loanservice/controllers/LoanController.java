@@ -51,11 +51,11 @@ public class LoanController {
     }
 
     @PostMapping()
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('admin') or principal == #userId")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan) {
-        log.trace("Start LoanController.registerLoan(" + loan.toString() + ")");
+    public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan, @RequestParam(name = "userId", defaultValue = "") String userId) {
+        log.info("Start LoanController.registerLoan(" + loan.toString() + ")");
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
         log.trace("End LoanController.registerLoan(" + loan.toString() + ")");
 		return response;

@@ -240,8 +240,9 @@ public class LoanEntity extends FinancialAsset {
 
     @Override
     public String toString() {
-        return "\nuser: " + this.getUser() +
-                "\nprincipal dollars: " + this.principal.getDollars()
+        return "\nuser: " + this.getUser()
+                + "\nitem id: " + this.getId()
+                + "\nprincipal dollars: " + this.principal.getDollars()
                 + "\nprincipal cents: " + this.principal.getCents()
                 + "\nprincipal isNegative: " + this.principal.isNegative()
                 + "\nAPR: " + this.loanType.getApr()

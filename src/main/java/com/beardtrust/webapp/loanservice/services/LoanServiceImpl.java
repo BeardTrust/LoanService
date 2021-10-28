@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort.Order;
 
@@ -149,16 +146,34 @@ public class LoanServiceImpl implements LoanService {
     log.trace("Start loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
         List<Sort.Order> orders = parseOrders(sortBy);
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
+        if (search.contains("$")) {
+            String[] searchSplit = search.split("\\$");
+            if (isNumber(searchSplit[1])) {
+                search = searchSplit[1];
+            }
+        }
         if (!("").equals(search)) {
-            if (isDouble(search)) {
-                System.out.println("search was an Integer");
+            if (isNumber(search) && !search.contains(".")) {
+                log.trace("Number had no '.', searching without split");
                 Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, userId, page);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+            } if (isNumber(search) && search.contains(".")) {
+                String[] nums = search.split("\\.");
+                log.trace("Number had a '.', splitting for dollars and cents");
+                Integer newSearch = Integer.parseInt(nums[0]);
+                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                newSearch = Integer.parseInt(nums[1]);
+                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                for (int i = 0; i < p.size(); i++) {
+                    l.add((p.get(i)));
+                }
+                Page<LoanEntity> o = new PageImpl(l, page, l.size());
+                return o;
             } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
-                System.out.println("search was a date");
+                log.trace("search was a date");
                 return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitleAndUser_UserId(search, search, search, userId, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFeeAndUser_UserId(search, search, search, userId, page);
             }
         }
         log.trace("End loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");

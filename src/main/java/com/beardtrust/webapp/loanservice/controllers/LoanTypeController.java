@@ -66,14 +66,15 @@ public class LoanTypeController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("permitAll()")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<Page<LoanTypeEntity>> getAllLoanTypesPage(
             @RequestParam(name = "page", defaultValue = "0") int pageNumber,
             @RequestParam(name = "size", defaultValue = "10") int pageSize,
             @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
-            @RequestParam(name = "search", defaultValue = "") String search)
+            @RequestParam(name = "search", defaultValue = "") String search,
+            @RequestParam(name = "userId", defaultValue = "") String userId)
     {
         log.trace("Start LoanTypeController.getAllLoanTypesPage(" + pageNumber + ", " + pageSize + ", " + sortBy + ", " + search + ")");
         Pageable page = PageRequest.of(pageNumber, pageSize);
