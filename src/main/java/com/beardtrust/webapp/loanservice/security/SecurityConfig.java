@@ -33,20 +33,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.passwordEncoder = passwordEncoder;
         this.authorizationService = authorizationService;
     }
-
-    @Description("Configure HTTP Security")
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.cors()
-                .and().authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/loans/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/loans/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/loantypes/**").permitAll()
-                .and().authorizeRequests().anyRequest().authenticated()
-                .and()
-                .addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
-        http.headers().frameOptions().disable();
-    }
+	@Description("Configure HTTP Security")
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.csrf().disable();
+		http.cors()
+				.and().authorizeRequests()
+				.antMatchers(HttpMethod.POST, "/loans/**").permitAll()
+				.antMatchers(HttpMethod.POST, "/loantypes/**").permitAll()
+				.antMatchers(HttpMethod.PUT, "/loantypes/**").permitAll()
+				.antMatchers(HttpMethod.DELETE, "/loantypes/**").permitAll()
+				.and().authorizeRequests().anyRequest().authenticated()
+				.and()
+				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
+		http.headers().frameOptions().disable();
+	}
 }

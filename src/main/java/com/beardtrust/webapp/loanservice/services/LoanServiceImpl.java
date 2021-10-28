@@ -3,14 +3,18 @@ package com.beardtrust.webapp.loanservice.services;
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import static org.apache.commons.lang.NumberUtils.isNumber;
+
+import lombok.extern.slf4j.Slf4j;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort.Order;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,6 +25,7 @@ import static org.apache.commons.lang.NumberUtils.isNumber;
 import static org.apache.commons.validator.GenericValidator.isDouble;
 
 @Service
+@Slf4j
 public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository repo;
@@ -41,14 +46,13 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search) {
+        log.trace("Start LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortName + ", " + sortDir + ", " + search + ")");
         List<Sort.Order> orders = new ArrayList();
         orders.add(new Sort.Order(getDirection(sortDir), sortName));
-        System.out.println("Inbound sort: " + sortName + " " + sortDir);
-        System.out.println("Combined orders: " + orders);
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
         System.out.println("Compiled page: " + page);
         System.out.println("Search param: " + search);
-        if (!("").equals(search)) {
+        /*if (!("").equals(search)) {
             if (isNumber(search)) {
                 System.out.println("search was a number");
                 Integer newSearch = Integer.parseInt(search);
@@ -60,16 +64,18 @@ public class LoanServiceImpl implements LoanService {
             } else {
                 return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitle(search, search, search, page);
             }
-        }
-//        System.out.println("Found in loan repo: " + repo.findAll(page).getContent().get(0).toString());
+        }*/
+        log.trace("End LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortName + ", " + sortDir + ", " + search + ")");
         return repo.findAll(page);
     }
 
     public List<LoanEntity> getAllLoans() {
+        log.trace("Start LoanService.getAllLoans()");
         return repo.findAll();
     }
 
     public Sort.Direction getDirection(String dir) {
+        log.trace("Start LoanService.getDirection(" + dir + ")");
         if ("asc".equals(dir)) {
             return Sort.Direction.ASC;
         } else {
@@ -79,54 +85,47 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public LoanEntity getById(String loanId) {
-        try {
-            Optional<LoanEntity> l = repo.findById(loanId);
-            return l.get();
-        } catch (Exception e) {
-            return null;
-        }
+        log.trace("Start LoanService.getById(" + loanId + ")");
+        return repo.findById(loanId).get();
     }
 
     public String deleteById(String loanId) {
+        log.trace("Start LoanService.deleteById(" + loanId + ")");
         try {
             Optional<LoanEntity> l = repo.findById(loanId);
             repo.delete(l.get());
             return "Delete successful";
         } catch (Exception e) {
+            log.info("Exception LoanService.deleteById(" + loanId + ") \n"
+            + e.getMessage());
             return "Failed to delete: " + e;
         }
     }
 
     public LoanEntity save(LoanEntity l) {
-        try {
-            System.out.println("Attempting to save: " + l);
-            repo.save(l);
-        } catch (Exception e) {
-            System.out.println("Unable to save");
-        }
-        try {
-            System.out.println("Attempting to save loan type: " + l.getLoanType().toString());
-            ltr.save(l.getLoanType());
-            repo.save(l);
-        } catch (Exception e) {
-            System.out.println("Unable to save loan type");
-        }
-        System.out.println("Loan Saved...");
+        log.trace("Start LoanService.LoanEntity(" + l + ")");
+        repo.save(l);
+        log.trace("End LoanService.LoanEntity(" + l + ")");
         return l;
     }
 
     @Override
     public String updateLoan(LoanEntity l) {
+        log.trace("Start LoanService.updateLoan(" + l + ")");
         try {
             LoanEntity l2 = repo.findById(l.getId()).orElse(null);
             repo.save(l2);
-            return "Update successful";
+            log.trace("End LoanService.updateLoan(" + l + ")");
+            return "Update successful: " + l2;
         } catch (Exception e) {
-            return "Failed to update: " + e;
+            log.info("Exception LoanService.updateLoan(" + l + ") \n"
+            + e.getMessage());
+            return "Update Failed";
         }
     }
 
     private CurrencyValue parseCurrency(String searchCriteria) {
+        log.trace("Start loanService.parseCurrency(" + searchCriteria + ")");
         String[] values = searchCriteria.split(",");
         CurrencyValue searchBalance = null;
 
@@ -139,41 +138,46 @@ public class LoanServiceImpl implements LoanService {
                 searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
             }
         }
-
+        log.trace("End loanService.parseCurrency(" + searchCriteria + ")");
         return searchBalance;
     }
 
-    @Override
-    public Page<LoanEntity> getAllMyLoansPage(int n, int s, String[] sortBy, String search) {
-        String sortName = sortBy[0];
-        String sortDir = sortBy[1];
-        String userId = "";
-        if (sortBy.length >= 3) {
-            userId = sortBy[2];
-        }
-        System.out.println("Attempting to find my loans");
-        List<Sort.Order> orders = new ArrayList();
-        orders.add(new Sort.Order(getDirection(sortDir), sortName));
-        System.out.println("Inbound sort: " + sortName + " " + sortDir);
-        System.out.println("Combined orders: " + orders);
+    public Page<LoanEntity> getAllMyLoansPage(int n, int s, String[] sortBy, String search, String userId) {
+    log.trace("Start loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
+        List<Sort.Order> orders = parseOrders(sortBy);
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
-        System.out.println("Compiled page: " + page);
-        System.out.println("Search param: " + search);
-        if (!("").equals(search)) {
-            if (isDouble(search)) {
-                System.out.println("search was an Integer");
-                Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, userId, page);
-            } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
-                System.out.println("search was a date");
-                return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
-            } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitleAndUser_UserId(search, search, search, userId, page);
+        if (search.contains("$")) {
+            String[] searchSplit = search.split("\\$");
+            if (isNumber(searchSplit[1])) {
+                search = searchSplit[1];
             }
         }
-        System.out.println("generic search, found:" + repo.findAllByUser_UserId(userId, page).getContent());
-        System.out.println("UserId searched by: " + userId);
-        return repo.findAllByUser_UserId(userId, page);
+        if (!("").equals(search)) {
+            if (isNumber(search) && !search.contains(".")) {
+                log.trace("Number had no '.', searching without split");
+                Integer newSearch = Integer.parseInt(search);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+            } if (isNumber(search) && search.contains(".")) {
+                String[] nums = search.split("\\.");
+                log.trace("Number had a '.', splitting for dollars and cents");
+                Integer newSearch = Integer.parseInt(nums[0]);
+                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                newSearch = Integer.parseInt(nums[1]);
+                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                for (int i = 0; i < p.size(); i++) {
+                    l.add((p.get(i)));
+                }
+                Page<LoanEntity> o = new PageImpl(l, page, l.size());
+                return o;
+            } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
+                log.trace("search was a date");
+                return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
+            } else {
+                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFeeAndUser_UserId(search, search, search, userId, page);
+            }
+        }
+        log.trace("End loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
+        return repo.findByUser_UserId(userId, page);
     }
 
     public CurrencyValue makePayment(CurrencyValue c, String id) {
@@ -191,7 +195,7 @@ public class LoanServiceImpl implements LoanService {
             repo.save(l);
             return returnValue;
         } catch (Exception e) {
-            System.out.println("Exception caught: " + e);
+            log.warn("Psyment process failed!!!");
             return null;
         }
     }
@@ -203,5 +207,30 @@ public class LoanServiceImpl implements LoanService {
             l1.calculateMinDue();
             repo.save(l1);
         }
+    }
+
+    private Sort.Direction getSortDirection(String direction) {
+        if (direction.equals("asc")) {
+            return Sort.Direction.ASC;
+        } else if (direction.equals("desc")) {
+            return Sort.Direction.DESC;
+        }
+
+        return Sort.Direction.ASC;
+    }
+
+    private List<Sort.Order> parseOrders(String[] sortBy) {
+        List<Sort.Order> orders = new ArrayList<>();
+
+        if (sortBy[0].contains(",")) {
+            for (String sortOrder : sortBy) {
+                String[] _sortBy = sortOrder.split(",");
+                orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+            }
+        } else {
+            orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
+        }
+//        System.out.println("loan orders: " + orders);
+        return orders;
     }
 }
