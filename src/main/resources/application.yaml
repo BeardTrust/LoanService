@@ -32,3 +32,7 @@ authorization:
 token:
   secret: aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj04WnEzS0NCZWQ1UQo=
   expiration: 864000000
+  logging:
+    file.name: /logs/loan-service-logging.log
+    level:
+      web: Info

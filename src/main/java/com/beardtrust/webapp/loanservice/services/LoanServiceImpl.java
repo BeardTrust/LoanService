@@ -4,6 +4,7 @@ import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
+import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,14 +25,18 @@ public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository repo;
     private final LoanTypeRepository ltr;
+    private final UserRepository ur;
 
-    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr) {
+    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr, UserRepository ur) {
         this.repo = repo;
         this.ltr = ltr;
+        this.ur = ur;
     }
 
-    public LoanEntity getNewLoan() {
-        return new LoanEntity();
+    public LoanEntity getNewLoan(String userId) {
+        LoanEntity l = new LoanEntity();
+        l.setUser(ur.findById(userId).get());
+        return l;
     }
 
     @Override
@@ -56,7 +61,7 @@ public class LoanServiceImpl implements LoanService {
                 return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitle(search, search, search, page);
             }
         }
-        System.out.println("Found in loan repo: " + repo.findAll(page).getContent().get(0).toString());
+//        System.out.println("Found in loan repo: " + repo.findAll(page).getContent().get(0).toString());
         return repo.findAll(page);
     }
 
@@ -94,7 +99,7 @@ public class LoanServiceImpl implements LoanService {
 
     public LoanEntity save(LoanEntity l) {
         try {
-            System.out.println("Attempting to save: " + l.toString());
+            System.out.println("Attempting to save: " + l);
             repo.save(l);
         } catch (Exception e) {
             System.out.println("Unable to save");
@@ -169,5 +174,34 @@ public class LoanServiceImpl implements LoanService {
         System.out.println("generic search, found:" + repo.findAllByUser_UserId(userId, page).getContent());
         System.out.println("UserId searched by: " + userId);
         return repo.findAllByUser_UserId(userId, page);
+    }
+
+    public CurrencyValue makePayment(CurrencyValue c, String id) {
+        CurrencyValue returnValue = new CurrencyValue(false, 0, 0);
+        try {
+            LoanEntity l = repo.findById(id).get();
+            returnValue = l.makePayment(c);
+            if (l.getMinDue().isNegative()) {
+                System.out.println("Min Due Negative");
+                l.getMinDue().setNegative(false);
+                l.getMinDue().setDollars(0);
+                l.getMinDue().setCents(0);
+            }
+            repo.save(l);
+            repo.save(l);
+            return returnValue;
+        } catch (Exception e) {
+            System.out.println("Exception caught: " + e);
+            return null;
+        }
+    }
+
+    public void calculateMinDue() {
+     List<LoanEntity> l = repo.findAll();
+        for (int i = 0; i < l.size(); i++) {
+            LoanEntity l1 = l.get(i);
+            l1.calculateMinDue();
+            repo.save(l1);
+        }
     }
 }

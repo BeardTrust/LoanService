@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.loanservice.controllers;
 
+import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.services.LoanService;
 import java.util.List;
@@ -39,11 +40,11 @@ public class LoanController {
     }
     
     @PreAuthorize("permitAll()")
-    @GetMapping("/new")
-    public ResponseEntity<LoanEntity> getNewUUID() {
+    @PostMapping("/new")
+    public ResponseEntity<LoanEntity> getNewUUID(@RequestBody String userId) {
         log.trace("Get new endpoint reached...");
         String res = UUID.randomUUID().toString();
-        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.getNewLoan(), HttpStatus.OK);
+        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.getNewLoan(userId), HttpStatus.OK);
         log.info("Outbound entity: " + response);
         return response;
     }
@@ -56,6 +57,15 @@ public class LoanController {
         System.out.println("Attempting to post, rcvd: " + loan.toString());
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
 		return response;
+    }
+
+    @PreAuthorize("hasRole('admin') or principal == #userId")
+    @PostMapping("/{userId}/{id}")//<-- Loan to be paid on
+    public ResponseEntity<CurrencyValue> payOnLoan(@PathVariable String id, @PathVariable String userId, @RequestBody CurrencyValue c) {
+        System.out.println("Attempting to pay on a loan, rcvd: " + c);
+        ResponseEntity<CurrencyValue> response = new ResponseEntity<>(ls.makePayment(c, id), HttpStatus.ACCEPTED);
+        return response;
+
     }
 
     @GetMapping
@@ -106,5 +116,11 @@ public class LoanController {
         } catch (Exception e) {
             return "Error finding Entity: " + e;
         }
+    }
+
+    @GetMapping("/calc")
+    @PreAuthorize("permitAll()")
+    public void calculateLoan() {
+        ls.calculateMinDue();
     }
 }

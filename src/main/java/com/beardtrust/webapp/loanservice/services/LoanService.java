@@ -2,6 +2,7 @@ package com.beardtrust.webapp.loanservice.services;
 
 import java.util.List;
 
+import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,10 @@ public interface LoanService {
         
         public String updateLoan(LoanEntity l);
         
-        public LoanEntity getNewLoan();
+        public LoanEntity getNewLoan(String id);
+
+        public void calculateMinDue();
+
+        public CurrencyValue makePayment(CurrencyValue c, String id);
 
 }
