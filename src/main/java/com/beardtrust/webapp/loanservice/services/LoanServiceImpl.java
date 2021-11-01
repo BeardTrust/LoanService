@@ -84,7 +84,7 @@ public class LoanServiceImpl implements LoanService {
                 log.trace("search was a date");
                 return repo.findByCreateDateOrNextDueDate(LocalDate.parse(search), LocalDate.parse(search), page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFee(search, search, search, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContaining(search, search, search, page);
             }
         }
         log.trace("End LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortName + ", " + sortDir + ", " + search + ")");
@@ -140,6 +140,7 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public String updateLoan(LoanEntity l) {
         log.info("Start LoanService.updateLoan(" + l + ")");
+        ltr.save(l.getLoanType());
         repo.save(l);
         log.info("updated loan valueTitle: " + repo.findById(l.getId()));
         try {
@@ -221,7 +222,7 @@ public class LoanServiceImpl implements LoanService {
                 log.trace("search was a date");
                 return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFeeAndUser_UserId(search, search, search, userId, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContainingAndUser_UserId(search, search, search, userId, page);
             }
         }
         log.trace("End loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");

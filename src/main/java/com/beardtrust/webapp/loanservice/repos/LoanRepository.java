@@ -23,14 +23,13 @@ public interface LoanRepository extends JpaRepository<LoanEntity, String> {
 
     List<LoanEntity> findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(double parseDouble, Integer newSearch, Integer newSearch1, Integer newSearch2, Integer newSearch3, Integer newSearch4, Integer newSearch5, Integer newSearch6, Integer newSearch7, String userId, Pageable page);
 
-
-    Page<LoanEntity> findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFeeAndUser_UserId(String search, String search1, String search2, String userId, Pageable page);
-
     Page<LoanEntity> findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(double parseDouble, Integer newSearch, Integer newSearch1, Integer newSearch2, Integer newSearch3, Integer newSearch4, Integer newSearch5, Integer newSearch6, Integer newSearch7, Pageable page);
 
     List<LoanEntity> findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(double parseDouble, Integer newSearch, Integer newSearch1, Integer newSearch2, Integer newSearch3, Integer newSearch4, Integer newSearch5, Integer newSearch6, Integer newSearch7, Pageable page);
 
     Page<LoanEntity> findByCreateDateOrNextDueDate(LocalDate parse, LocalDate parse1, Pageable page);
 
-    Page<LoanEntity> findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFee(String search, String search1, String search2, Pageable page);
+    Page<LoanEntity> findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContaining(String search, String search1, String search2, Pageable page);
+
+    Page<LoanEntity> findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContainingAndUser_UserId(String search, String search1, String search2, String userId, Pageable page);
 }

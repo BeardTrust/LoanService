@@ -211,6 +211,7 @@ public class LoanEntity extends FinancialAsset {
                 + "\nloanType Id: " + this.loanType.getId()
                 + "\nloanType typeName: " + this.loanType.getTypeName()
                 + "\nloanType description: " + this.loanType.getDescription()
+                + "\nloanType months remaining: " + this.loanType.getNumMonths()
                 + "\ncreateDate: " + this.getCreateDate()
                 + "\nnextDueDate: " + this.getNextDueDate()
                 + "\npreviousDueDate: " + this.getPreviousDueDate()
