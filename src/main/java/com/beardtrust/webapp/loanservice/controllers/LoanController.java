@@ -130,7 +130,7 @@ public class LoanController {
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> updateLoan(@RequestBody LoanEntity a) {
-        log.info("Start LoanController.updateLoan(" + a + ")");
+        log.trace("Start LoanController.updateLoan(" + a + ")");
         ResponseEntity<String> response = new ResponseEntity<>(ls.updateLoan(a), HttpStatus.OK);
         log.trace("End LoanController.updateLoan(" + a + ")");
         return response;

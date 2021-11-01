@@ -139,17 +139,17 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public String updateLoan(LoanEntity l) {
-        log.info("Start LoanService.updateLoan(" + l + ")");
+        log.trace("Start LoanService.updateLoan(" + l + ")");
         ltr.save(l.getLoanType());
         repo.save(l);
-        log.info("updated loan valueTitle: " + repo.findById(l.getId()));
+        log.trace("updated loan valueTitle: " + repo.findById(l.getId()));
         try {
             LoanEntity l2 = repo.findById(l.getId()).orElse(null);
             repo.save(l2);
             log.trace("End LoanService.updateLoan(" + l + ")");
             return "Update successful: " + l2;
         } catch (Exception e) {
-            log.info("Exception LoanService.updateLoan(" + l + ") \n"
+            log.warn("Exception LoanService.updateLoan(" + l + ") \n"
                     + e.getMessage());
             return "Update Failed";
         }
