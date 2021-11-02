@@ -2,6 +2,7 @@ package com.beardtrust.webapp.loanservice.controllers;
 
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
+import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.services.LoanService;
 import java.util.List;
 import java.util.UUID;
@@ -50,12 +51,23 @@ public class LoanController {
         return response;
     }
 
+    @PostMapping("/check/{userId}")
+    @PreAuthorize("hasAuthority('admin') or principal == #userId")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<LoanEntity> creditCheck(@RequestBody LoanTypeEntity l, @PathVariable(name = "userId") String userId) {
+        log.info("Start LoanController.creditCheck(" + userId + ")");
+        ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.creditCheck(userId, l), HttpStatus.OK);
+        log.trace("End LoanController.registerLoan(" + userId + ")");
+        return response;
+    }
+
     @PostMapping()
     @PreAuthorize("hasAuthority('admin') or principal == #userId")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<LoanEntity> registerLoan(@RequestBody LoanEntity loan, @RequestParam(name = "userId", defaultValue = "") String userId) {
-        log.info("Start LoanController.registerLoan(" + loan.toString() + ")");
+        log.trace("Start LoanController.registerLoan(" + loan.toString() + ")");
         ResponseEntity<LoanEntity> response = new ResponseEntity<>(ls.save(loan), HttpStatus.ACCEPTED);
         log.trace("End LoanController.registerLoan(" + loan.toString() + ")");
 		return response;
@@ -120,6 +132,17 @@ public class LoanController {
     public ResponseEntity<String> updateLoan(@RequestBody LoanEntity a) {
         log.trace("Start LoanController.updateLoan(" + a + ")");
         ResponseEntity<String> response = new ResponseEntity<>(ls.updateLoan(a), HttpStatus.OK);
+        log.trace("End LoanController.updateLoan(" + a + ")");
+        return response;
+    }
+
+    @PutMapping("/late")
+    @PreAuthorize("hasAuthority('admin')")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<String> checkLateFee(@RequestBody LoanEntity a) {
+        log.info("Start LoanController.updateLoan(" + a + ")");
+        ResponseEntity<String> response = new ResponseEntity<>(ls.lateFeeCheck(a), HttpStatus.OK);
         log.trace("End LoanController.updateLoan(" + a + ")");
         return response;
     }

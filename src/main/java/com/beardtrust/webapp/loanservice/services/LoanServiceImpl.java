@@ -2,9 +2,12 @@ package com.beardtrust.webapp.loanservice.services;
 
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
+import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
+
 import static org.apache.commons.lang.NumberUtils.isNumber;
 
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +16,6 @@ import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Sort.Order;
 
 
 import java.time.LocalDate;
@@ -40,6 +42,7 @@ public class LoanServiceImpl implements LoanService {
 
     public LoanEntity getNewLoan(String userId) {
         LoanEntity l = new LoanEntity();
+//        log.info("userId received for credit check: " + userId);
         l.setUser(ur.findById(userId).get());
         return l;
     }
@@ -52,19 +55,38 @@ public class LoanServiceImpl implements LoanService {
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
         System.out.println("Compiled page: " + page);
         System.out.println("Search param: " + search);
-        /*if (!("").equals(search)) {
-            if (isNumber(search)) {
-                System.out.println("search was a number");
-                Integer newSearch = Integer.parseInt(search);
-                Double doubleSearch = Double.parseDouble(search);
-                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_Cents(doubleSearch, newSearch, newSearch, newSearch, newSearch, page);
-            } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
-                System.out.println("search was a date");
-                return repo.findByCreateDateOrNextDueDateOrPreviousDueDate(LocalDate.parse(search), LocalDate.parse(search), LocalDate.parse(search), page);
-            } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrValueTitle(search, search, search, page);
+        if (search.contains("$")) {
+            String[] searchSplit = search.split("\\$");
+            if (isNumber(searchSplit[1])) {
+                search = searchSplit[1];
             }
-        }*/
+        }
+        if (!("").equals(search)) {
+            if (isNumber(search) && !search.contains(".")) {
+                log.trace("Number had no '.', searching without split");
+                Integer newSearch = Integer.parseInt(search);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
+            }
+            if (isNumber(search) && search.contains(".")) {
+                String[] nums = search.split("\\.");
+                log.trace("Number had a '.', splitting for dollars and cents");
+                Integer newSearch = Integer.parseInt(nums[0]);
+                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
+                newSearch = Integer.parseInt(nums[1]);
+                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
+                for (int i = 0; i < p.size(); i++) {
+                    l.add((p.get(i)));
+                }
+                Page<LoanEntity> o = new PageImpl(l, page, l.size());
+                return o;
+            }
+            if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
+                log.trace("search was a date");
+                return repo.findByCreateDateOrNextDueDate(LocalDate.parse(search), LocalDate.parse(search), page);
+            } else {
+                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContaining(search, search, search, page);
+            }
+        }
         log.trace("End LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortName + ", " + sortDir + ", " + search + ")");
         return repo.findAll(page);
     }
@@ -97,14 +119,20 @@ public class LoanServiceImpl implements LoanService {
             return "Delete successful";
         } catch (Exception e) {
             log.info("Exception LoanService.deleteById(" + loanId + ") \n"
-            + e.getMessage());
+                    + e.getMessage());
             return "Failed to delete: " + e;
         }
     }
 
     public LoanEntity save(LoanEntity l) {
         log.trace("Start LoanService.LoanEntity(" + l + ")");
-        repo.save(l);
+        try {
+            repo.save(l);
+        } catch (Exception e) {
+            log.warn("Error trying to save a new loan: " + e.getMessage());
+            ltr.save(l.getLoanType());
+            repo.save(l);
+        }
         log.trace("End LoanService.LoanEntity(" + l + ")");
         return l;
     }
@@ -112,15 +140,34 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public String updateLoan(LoanEntity l) {
         log.trace("Start LoanService.updateLoan(" + l + ")");
+        ltr.save(l.getLoanType());
+        repo.save(l);
+        log.trace("updated loan valueTitle: " + repo.findById(l.getId()));
         try {
             LoanEntity l2 = repo.findById(l.getId()).orElse(null);
             repo.save(l2);
             log.trace("End LoanService.updateLoan(" + l + ")");
             return "Update successful: " + l2;
         } catch (Exception e) {
-            log.info("Exception LoanService.updateLoan(" + l + ") \n"
-            + e.getMessage());
+            log.warn("Exception LoanService.updateLoan(" + l + ") \n"
+                    + e.getMessage());
             return "Update Failed";
+        }
+    }
+
+    public String lateFeeCheck(LoanEntity l) {
+        log.trace("Checking late fee...");
+        if (l.checkDate()) {
+            log.trace("late fee applied to loan past due...");
+            System.out.println("late fee added: " + l.getLateFee());
+//            repo.save(l);
+            log.trace("Returning from late fee check...");
+            return "Late fee applied";
+        } else {
+            log.trace("loan not past due, no late fee applied...");
+            l.checkDate();
+            log.trace("Returning from late fee check...");
+            return "No late fee applied";
         }
     }
 
@@ -143,7 +190,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     public Page<LoanEntity> getAllMyLoansPage(int n, int s, String[] sortBy, String search, String userId) {
-    log.trace("Start loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
+        log.trace("Start loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
         List<Sort.Order> orders = parseOrders(sortBy);
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
         if (search.contains("$")) {
@@ -157,7 +204,8 @@ public class LoanServiceImpl implements LoanService {
                 log.trace("Number had no '.', searching without split");
                 Integer newSearch = Integer.parseInt(search);
                 return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
-            } if (isNumber(search) && search.contains(".")) {
+            }
+            if (isNumber(search) && search.contains(".")) {
                 String[] nums = search.split("\\.");
                 log.trace("Number had a '.', splitting for dollars and cents");
                 Integer newSearch = Integer.parseInt(nums[0]);
@@ -169,22 +217,32 @@ public class LoanServiceImpl implements LoanService {
                 }
                 Page<LoanEntity> o = new PageImpl(l, page, l.size());
                 return o;
-            } if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
+            }
+            if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
                 log.trace("search was a date");
                 return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameOrLoanType_DescriptionOrMinMonthFeeAndUser_UserId(search, search, search, userId, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContainingAndUser_UserId(search, search, search, userId, page);
             }
         }
         log.trace("End loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
         return repo.findByUser_UserId(userId, page);
     }
 
+    /*
+
+    Receives a CurrencyValue and String representing the value to be paid towards the loan of id.
+    Late fees will automatically take out a cut, any resulting amount will go towards
+    the minimum due. If the minimum die is cleared, the hasPaid status will be set to true.
+    If the amount paid is more than amount owed, the remaining amount will be returned to the
+    payment source
+
+     */
     public CurrencyValue makePayment(CurrencyValue c, String id) {
         CurrencyValue returnValue = new CurrencyValue(false, 0, 0);
         try {
             LoanEntity l = repo.findById(id).get();
-            returnValue = l.makePayment(c);
+            returnValue = processPayment(c, l);
             if (l.getMinDue().isNegative()) {
                 System.out.println("Min Due Negative");
                 l.getMinDue().setNegative(false);
@@ -201,7 +259,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     public void calculateMinDue() {
-     List<LoanEntity> l = repo.findAll();
+        List<LoanEntity> l = repo.findAll();
         for (int i = 0; i < l.size(); i++) {
             LoanEntity l1 = l.get(i);
             l1.calculateMinDue();
@@ -232,5 +290,79 @@ public class LoanServiceImpl implements LoanService {
         }
 //        System.out.println("loan orders: " + orders);
         return orders;
+    }
+
+    /*
+    Receives a CurrencyValue object representing the value to be paid towards the loan.
+    Late fees will automatically take out a cut, any resulting amount will go towards
+    the minimum due. If the minimum die is cleared, the hasPaid status will be set to true.
+    If the amount paid is more than amount owed, the remaining amount will be returned to the
+    payment source
+
+     */
+    public CurrencyValue processPayment(CurrencyValue payment, LoanEntity l) {
+        l.getMinDue().setNegative(false);
+        CurrencyValue temp;
+        System.out.println("Incoming payment: " + payment.toString());
+        if (l.getLateFee().getDollars() > 0 || l.getLateFee().getCents() > 0) {
+            System.out.println("latefee to pay on: " + l.getLateFee());
+            temp = l.getLateFee();
+//            lateFee.add(payment);
+            payment.add(temp);
+            System.out.println("payment after late fee: " + payment);
+        }
+        payment.setNegative(false);
+        if (payment.compareTo(l.getBalance()) == 1) {//paynment is greater
+            payment.setNegative(true);
+            System.out.println("paying more than balance..." + payment);
+            System.out.println("balance: " + l.getBalance());
+            l.getMinDue().add(payment);
+            l.getBalance().add(payment);
+            System.out.println("balance added to payment: " + l.getBalance());
+            payment.setDollars(l.getBalance().getDollars());
+            payment.setCents(l.getBalance().getCents());
+            payment.setNegative(false);
+            l.getBalance().setDollars(0);
+            l.getBalance().setCents(0);
+            l.getBalance().setNegative(false);
+            l.getMinDue().setDollars(0);
+            l.getMinDue().setCents(0);
+            payment.setNegative(false);
+            System.out.println("resulting balance: " + l.getBalance());
+            System.out.println("remaining payment: " + payment);
+            l.setHasPaid(true);
+            return payment;
+        } else {
+            payment.setNegative(true);
+            System.out.println("balance paid on: " + l.getBalance());
+            System.out.println("amount paying: " + payment);
+            l.getMinDue().add(payment);
+            l.getBalance().add(payment);
+            System.out.println("minimum payment due: " + l.getMinDue());
+            System.out.println("balance after payment: " + l.getBalance());
+        }
+        int temp2 = l.getMinDue().getDollars() + l.getMinDue().getCents();
+        if (temp2 <= 0) {
+            l.getMinDue().setDollars(0);
+            l.getMinDue().setCents(0);
+            l.getMinDue().setNegative(false);
+            l.setHasPaid(true);
+            l.checkDate();
+        }
+        System.out.println("Loan haspaid status: " + l.isHasPaid());
+        return payment;
+    }
+
+    public LoanEntity creditCheck(String userId, LoanTypeEntity lt) {
+        /*
+        credit check logic here
+         */
+        LoanEntity l = getNewLoan(userId);
+        l.setLoanType(lt);
+        l.setPrincipal(new CurrencyValue(false, 1000, 0));
+        l.initializeBalance();
+        l.calculateMinDue();
+        log.info("loan built: " + l.toString());
+        return l;
     }
 }
