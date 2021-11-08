@@ -1,6 +1,10 @@
 server:
   ssl:
     enabled: true
+    key-store: classpath:springboot.jks
+    key-store-password: password
+    key-alias: springboot
+    enabled-protocols: TLSv1,TLSv1.1,TLSv1.2
   port: ${PORT:7776}
 management:
   endpoints:
