@@ -131,4 +131,16 @@ public class PaymentEntity implements Serializable {
 				+ "\nprevious due date: " + this.getPreviousDueDate()
 				+ "\npaid status: " + this.isHasPaid();
 	}
+
+    public void calculateMinDue(CurrencyValue b, int months) {
+		System.out.println("parsing balance: " + b.toString());
+		Double temp = (double) b.getDollars() + (double) (b.getCents() / 100);
+		temp /= months;
+		System.out.println("min due temp value set: " + (int) Math.ceil(temp));
+		System.out.println("min due temp value parsed: " + CurrencyValue.valueOf(temp));
+		this.setMinDue(CurrencyValue.valueOf(temp));
+		minMonthFee = minDue.toString();
+		setMinMonthFee(minMonthFee);
+
+    }
 }

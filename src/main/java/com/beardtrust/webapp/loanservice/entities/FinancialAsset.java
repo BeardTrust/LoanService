@@ -31,6 +31,9 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 	private UserEntity user;
 	private boolean activeStatus;
 	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name = "isNegative", column = @Column(columnDefinition = "tinyInt default 0"))
+	})
 	private CurrencyValue balance;
 	private LocalDateTime createDate;
 	@JsonIgnore

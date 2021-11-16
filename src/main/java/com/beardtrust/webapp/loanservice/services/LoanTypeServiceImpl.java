@@ -146,7 +146,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
 
     @Override
     public LoanEntity creditCheck(LoanTypeEntity loan, String id) {
-        log.trace("Start LoanTypeService.creditCheck(" + loan + ", " + id + ")");
+        log.info("Start LoanTypeService.creditCheck(" + loan + ", " + id + ")");
         CurrencyValue c = new CurrencyValue();
         c.setDollars(1000);
         c.setCents(0);
@@ -156,7 +156,8 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         CurrencyValue bal = calcBalance(c, loan.getApr());
         l.setPrincipal(c);
         l.setBalance(bal);
-//        l.calculateMinDue();
+        System.out.println("setting min due...");
+        l.getPayment().calculateMinDue(l.getBalance(), l.getLoanType().getNumMonths());
         log.trace("End LoanTypeService.creditCheck(" + loan + ", " + id + ")");
         return l;
     }

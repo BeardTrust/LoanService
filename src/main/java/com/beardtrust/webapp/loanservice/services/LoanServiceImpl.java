@@ -3,9 +3,11 @@ package com.beardtrust.webapp.loanservice.services;
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
+import com.beardtrust.webapp.loanservice.entities.PaymentEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.apache.commons.lang.NumberUtils.isNumber;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
+import org.hibernate.type.LocalDateTimeType;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -119,7 +122,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     public LoanEntity save(LoanEntity l) {
-        log.trace("Start LoanService.LoanEntity(" + l + ")");
+        log.info("Start LoanService.LoanEntity(" + l + ")");
         try {
             repo.save(l);
         } catch (Exception e) {
@@ -347,17 +350,43 @@ public class LoanServiceImpl implements LoanService {
         System.out.println("Loan haspaid status: " + l.getPayment().isHasPaid());
         return payment;
     }
-
-    public LoanEntity creditCheck(String userId, LoanTypeEntity lt) {
-        /*
-        credit check logic here
-         */
-        LoanEntity l = getNewLoan(userId);
-        l.setLoanType(lt);
-        l.setPrincipal(new CurrencyValue(false, 1000, 0));
-//        l.initializeBalance();
-//        l.calculateMinDue();
-        log.info("loan built: " + l.toString());
+    public LoanEntity creditCheck(String id, LoanTypeEntity loan) {
+        log.info("Start LoanService.creditCheck(" + loan + ", " + id + ")");
+        CurrencyValue c = new CurrencyValue();
+        c.setDollars(1000);
+        c.setCents(0);
+        LoanEntity l = new LoanEntity();
+        l.setLoanType(loan);
+        l.setUser(ur.findById(id).get());
+        CurrencyValue bal = calcBalance(c, loan.getApr());
+        l.setPrincipal(c);
+        l.setBalance(bal);
+        System.out.println("setting min due...");
+        PaymentEntity p = new PaymentEntity();
+        p.calculateMinDue(l.getBalance(), l.getLoanType().getNumMonths());
+        p.setLateFee(new CurrencyValue( false, 0, 0));
+        p.setHasPaid(false);
+        LocalDateTime n = LocalDateTime.now();
+        n.plusDays(30);
+        p.setNextDueDate(n);
+        n.minusDays(60);
+        p.setPreviousDueDate(n);
+        l.setPayment(p);
+        log.trace("End LoanService.creditCheck(" + loan + ", " + id + ")");
         return l;
+    }
+
+    public CurrencyValue calcBalance(CurrencyValue c, Double apr) {
+        log.trace("Start LoanService.principalCalc(" + c + ", " + apr + ")");
+        CurrencyValue c2 = new CurrencyValue();
+        c.setNegative(false);
+        Integer p = 0;
+        double v = c.getDollars() + c.getCents();
+        double a = v * (1 + apr/100);
+        int ce = (int) (a - Math.floor(a));
+        int dol = (int) (a - (a - Math.floor(a)));
+        log.trace("End LoanService.principalCalc(" + c + ", " + apr + ")");
+        c2.add(dol, ce);
+        return c2;
     }
 }
