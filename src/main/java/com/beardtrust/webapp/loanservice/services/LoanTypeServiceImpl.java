@@ -1,11 +1,10 @@
 package com.beardtrust.webapp.loanservice.services;
 
-import com.beardtrust.webapp.loanservice.entities.Balance;
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
-import java.time.LocalDate;
+
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang.NumberUtils.isNumber;
-import org.apache.commons.validator.GenericValidator;
 import static org.apache.commons.validator.GenericValidator.isDouble;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -158,7 +156,7 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         CurrencyValue bal = calcBalance(c, loan.getApr());
         l.setPrincipal(c);
         l.setBalance(bal);
-        l.calculateMinDue();
+//        l.calculateMinDue();
         log.trace("End LoanTypeService.creditCheck(" + loan + ", " + id + ")");
         return l;
     }

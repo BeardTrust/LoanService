@@ -24,6 +24,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
 authorization:
   token:
     header:
