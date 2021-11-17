@@ -278,15 +278,17 @@ public class LoanServiceImpl implements LoanService {
     private List<Sort.Order> parseOrders(String[] sortBy) {
         List<Sort.Order> orders = new ArrayList<>();
 
-        if (sortBy[0].contains(",")) {
-            for (String sortOrder : sortBy) {
-                String[] _sortBy = sortOrder.split(",");
-                orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+        if (sortBy.length > 2) {
+            for (int i = 0; i < sortBy.length; i++) {
+                String sort = sortBy[i];
+                String dir = sortBy[i + 1];
+                orders.add(new Sort.Order(getSortDirection(dir), sort));
+                i++;
             }
         } else {
             orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
         }
-//        System.out.println("loan orders: " + orders);
+        System.out.println("full orders: " + orders);
         return orders;
     }
 
