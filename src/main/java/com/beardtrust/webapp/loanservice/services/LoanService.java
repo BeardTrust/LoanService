@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface LoanService {
 
-    public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search);
+    public Page<LoanEntity> getAllLoansPage(int n, int s, String[] sortBy, String search);
 
     public Page<LoanEntity> getAllMyLoansPage(int pn, int ps, String[] sb, String s, String userId);
 

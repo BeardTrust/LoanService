@@ -3,9 +3,11 @@ package com.beardtrust.webapp.loanservice.services;
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
+import com.beardtrust.webapp.loanservice.entities.PaymentEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.apache.commons.lang.NumberUtils.isNumber;
@@ -14,17 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
+import org.hibernate.type.LocalDateTimeType;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static org.apache.commons.lang.NumberUtils.isNumber;
-import static org.apache.commons.validator.GenericValidator.isDouble;
 
 @Service
 @Slf4j
@@ -48,10 +46,9 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
-    public Page<LoanEntity> getAllLoansPage(Integer n, Integer s, String sortName, String sortDir, String search) {
-        log.trace("Start LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortName + ", " + sortDir + ", " + search + ")");
-        List<Sort.Order> orders = new ArrayList();
-        orders.add(new Sort.Order(getDirection(sortDir), sortName));
+    public Page<LoanEntity> getAllLoansPage(int n, int s, String[] sortBy, String search) {
+        log.trace("Start LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
+        List<Sort.Order> orders = parseOrders(sortBy);
         Pageable page = PageRequest.of(n, s, Sort.by(orders));
         System.out.println("Compiled page: " + page);
         System.out.println("Search param: " + search);
@@ -65,15 +62,15 @@ public class LoanServiceImpl implements LoanService {
             if (isNumber(search) && !search.contains(".")) {
                 log.trace("Number had no '.', searching without split");
                 Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrPayment_MinDue_DollarsOrPayment_MinDue_CentsOrPayment_LateFee_DollarsOrPayment_LateFee_Cents(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
             }
             if (isNumber(search) && search.contains(".")) {
                 String[] nums = search.split("\\.");
                 log.trace("Number had a '.', splitting for dollars and cents");
                 Integer newSearch = Integer.parseInt(nums[0]);
-                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
+                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrPayment_MinDue_DollarsOrPayment_MinDue_CentsOrPayment_LateFee_DollarsOrPayment_LateFee_Cents(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
                 newSearch = Integer.parseInt(nums[1]);
-                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_Cents(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
+                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrPayment_MinDue_DollarsOrPayment_MinDue_CentsOrPayment_LateFee_DollarsOrPayment_LateFee_Cents(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, page);
                 for (int i = 0; i < p.size(); i++) {
                     l.add((p.get(i)));
                 }
@@ -82,12 +79,12 @@ public class LoanServiceImpl implements LoanService {
             }
             if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
                 log.trace("search was a date");
-                return repo.findByCreateDateOrNextDueDate(LocalDate.parse(search), LocalDate.parse(search), page);
+                return repo.findByCreateDateOrPayment_NextDueDate(LocalDate.parse(search), LocalDate.parse(search), page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContaining(search, search, search, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrPayment_MinMonthFeeContaining(search, search, search, page);
             }
         }
-        log.trace("End LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortName + ", " + sortDir + ", " + search + ")");
+        log.trace("End LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortBy +  ", " + search + ")");
         return repo.findAll(page);
     }
 
@@ -125,7 +122,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     public LoanEntity save(LoanEntity l) {
-        log.trace("Start LoanService.LoanEntity(" + l + ")");
+        log.info("Start LoanService.LoanEntity(" + l + ")");
         try {
             repo.save(l);
         } catch (Exception e) {
@@ -157,18 +154,19 @@ public class LoanServiceImpl implements LoanService {
 
     public String lateFeeCheck(LoanEntity l) {
         log.trace("Checking late fee...");
-        if (l.checkDate()) {
-            log.trace("late fee applied to loan past due...");
-            System.out.println("late fee added: " + l.getLateFee());
-//            repo.save(l);
-            log.trace("Returning from late fee check...");
-            return "Late fee applied";
-        } else {
-            log.trace("loan not past due, no late fee applied...");
-            l.checkDate();
-            log.trace("Returning from late fee check...");
-            return "No late fee applied";
-        }
+//        if (l.checkDate()) {
+//            log.trace("late fee applied to loan past due...");
+////            System.out.println("late fee added: " + l.getLateFee());
+////            repo.save(l);
+//            log.trace("Returning from late fee check...");
+//            return "Late fee applied";
+//        } else {
+//            log.trace("loan not past due, no late fee applied...");
+////            l.checkDate();
+//            log.trace("Returning from late fee check...");
+//            return "No late fee applied";
+//        }
+        return null;
     }
 
     private CurrencyValue parseCurrency(String searchCriteria) {
@@ -203,15 +201,15 @@ public class LoanServiceImpl implements LoanService {
             if (isNumber(search) && !search.contains(".")) {
                 log.trace("Number had no '.', searching without split");
                 Integer newSearch = Integer.parseInt(search);
-                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                return repo.findAllByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrPayment_MinDue_DollarsOrPayment_MinDue_CentsOrPayment_LateFee_DollarsOrPayment_LateFee_CentsAndUser_UserId(Double.parseDouble(newSearch.toString()), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
             }
             if (isNumber(search) && search.contains(".")) {
                 String[] nums = search.split("\\.");
                 log.trace("Number had a '.', splitting for dollars and cents");
                 Integer newSearch = Integer.parseInt(nums[0]);
-                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                List<LoanEntity> l = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrPayment_MinDue_DollarsOrPayment_MinDue_CentsOrPayment_LateFee_DollarsOrPayment_LateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
                 newSearch = Integer.parseInt(nums[1]);
-                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrMinDue_DollarsOrMinDue_CentsOrLateFee_DollarsOrLateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
+                List<LoanEntity> p = repo.findByLoanType_AprOrPrincipal_DollarsOrPrincipal_CentsOrBalance_DollarsOrBalance_CentsOrPayment_MinDue_DollarsOrPayment_MinDue_CentsOrPayment_LateFee_DollarsOrPayment_LateFee_CentsAndUser_UserId(Double.parseDouble(search), newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, newSearch, userId, page);
                 for (int i = 0; i < p.size(); i++) {
                     l.add((p.get(i)));
                 }
@@ -220,12 +218,12 @@ public class LoanServiceImpl implements LoanService {
             }
             if (GenericValidator.isDate(search, "yyyy-MM-dd", false)) {
                 log.trace("search was a date");
-                return repo.findByCreateDateOrNextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
+                return repo.findByCreateDateOrPayment_NextDueDateAndUser_UserId(LocalDate.parse(search), LocalDate.parse(search), userId, page);
             } else {
-                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrMinMonthFeeContainingAndUser_UserId(search, search, search, userId, page);
+                return repo.findAllIgnoreCaseByLoanType_TypeNameContainingOrLoanType_DescriptionContainingOrPayment_MinMonthFeeContainingAndUser_UserId(search, search, search, userId, page);
             }
         }
-        log.trace("End loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
+        log.info("End loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
         return repo.findByUser_UserId(userId, page);
     }
 
@@ -243,11 +241,11 @@ public class LoanServiceImpl implements LoanService {
         try {
             LoanEntity l = repo.findById(id).get();
             returnValue = processPayment(c, l);
-            if (l.getMinDue().isNegative()) {
+            if (l.getPayment().getMinDue().isNegative()) {
                 System.out.println("Min Due Negative");
-                l.getMinDue().setNegative(false);
-                l.getMinDue().setDollars(0);
-                l.getMinDue().setCents(0);
+                l.getPayment().getMinDue().setNegative(false);
+                l.getPayment().getMinDue().setDollars(0);
+                l.getPayment().getMinDue().setCents(0);
             }
             repo.save(l);
             repo.save(l);
@@ -262,7 +260,7 @@ public class LoanServiceImpl implements LoanService {
         List<LoanEntity> l = repo.findAll();
         for (int i = 0; i < l.size(); i++) {
             LoanEntity l1 = l.get(i);
-            l1.calculateMinDue();
+//            l1.calculateMinDue();
             repo.save(l1);
         }
     }
@@ -280,15 +278,17 @@ public class LoanServiceImpl implements LoanService {
     private List<Sort.Order> parseOrders(String[] sortBy) {
         List<Sort.Order> orders = new ArrayList<>();
 
-        if (sortBy[0].contains(",")) {
-            for (String sortOrder : sortBy) {
-                String[] _sortBy = sortOrder.split(",");
-                orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+        if (sortBy.length > 2) {
+            for (int i = 0; i < sortBy.length; i++) {
+                String sort = sortBy[i];
+                String dir = sortBy[i + 1];
+                orders.add(new Sort.Order(getSortDirection(dir), sort));
+                i++;
             }
         } else {
             orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
         }
-//        System.out.println("loan orders: " + orders);
+        System.out.println("full orders: " + orders);
         return orders;
     }
 
@@ -301,13 +301,13 @@ public class LoanServiceImpl implements LoanService {
 
      */
     public CurrencyValue processPayment(CurrencyValue payment, LoanEntity l) {
-        l.getMinDue().setNegative(false);
+        l.getPayment().getMinDue().setNegative(false);
         CurrencyValue temp;
         System.out.println("Incoming payment: " + payment.toString());
-        if (l.getLateFee().getDollars() > 0 || l.getLateFee().getCents() > 0) {
-            System.out.println("latefee to pay on: " + l.getLateFee());
-            temp = l.getLateFee();
-//            lateFee.add(payment);
+        if (l.getPayment().getLateFee().getDollars() > 0 || l.getPayment().getLateFee().getCents() > 0) {
+            System.out.println("latefee to pay on: " + l.getPayment().getLateFee());
+            temp = l.getPayment().getLateFee();
+            l.getPayment().getLateFee().add(payment);
             payment.add(temp);
             System.out.println("payment after late fee: " + payment);
         }
@@ -316,7 +316,7 @@ public class LoanServiceImpl implements LoanService {
             payment.setNegative(true);
             System.out.println("paying more than balance..." + payment);
             System.out.println("balance: " + l.getBalance());
-            l.getMinDue().add(payment);
+            l.getPayment().getMinDue().add(payment);
             l.getBalance().add(payment);
             System.out.println("balance added to payment: " + l.getBalance());
             payment.setDollars(l.getBalance().getDollars());
@@ -325,44 +325,70 @@ public class LoanServiceImpl implements LoanService {
             l.getBalance().setDollars(0);
             l.getBalance().setCents(0);
             l.getBalance().setNegative(false);
-            l.getMinDue().setDollars(0);
-            l.getMinDue().setCents(0);
+            l.getPayment().getMinDue().setDollars(0);
+            l.getPayment().getMinDue().setCents(0);
             payment.setNegative(false);
             System.out.println("resulting balance: " + l.getBalance());
             System.out.println("remaining payment: " + payment);
-            l.setHasPaid(true);
+            l.getPayment().setHasPaid(true);
             return payment;
         } else {
             payment.setNegative(true);
             System.out.println("balance paid on: " + l.getBalance());
             System.out.println("amount paying: " + payment);
-            l.getMinDue().add(payment);
+            l.getPayment().getMinDue().add(payment);
             l.getBalance().add(payment);
-            System.out.println("minimum payment due: " + l.getMinDue());
+            System.out.println("minimum payment due: " + l.getPayment().getMinDue());
             System.out.println("balance after payment: " + l.getBalance());
         }
-        int temp2 = l.getMinDue().getDollars() + l.getMinDue().getCents();
+        int temp2 = l.getPayment().getMinDue().getDollars() + l.getPayment().getMinDue().getCents();
         if (temp2 <= 0) {
-            l.getMinDue().setDollars(0);
-            l.getMinDue().setCents(0);
-            l.getMinDue().setNegative(false);
-            l.setHasPaid(true);
-            l.checkDate();
+            l.getPayment().getMinDue().setDollars(0);
+            l.getPayment().getMinDue().setCents(0);
+            l.getPayment().getMinDue().setNegative(false);
+            l.getPayment().setHasPaid(true);
+//            l.getPayment().checkDate();
         }
-        System.out.println("Loan haspaid status: " + l.isHasPaid());
+        System.out.println("Loan haspaid status: " + l.getPayment().isHasPaid());
         return payment;
     }
-
-    public LoanEntity creditCheck(String userId, LoanTypeEntity lt) {
-        /*
-        credit check logic here
-         */
-        LoanEntity l = getNewLoan(userId);
-        l.setLoanType(lt);
-        l.setPrincipal(new CurrencyValue(false, 1000, 0));
-        l.initializeBalance();
-        l.calculateMinDue();
-        log.info("loan built: " + l.toString());
+    public LoanEntity creditCheck(String id, LoanTypeEntity loan) {
+        log.info("Start LoanService.creditCheck(" + loan + ", " + id + ")");
+        CurrencyValue c = new CurrencyValue();
+        c.setDollars(1000);
+        c.setCents(0);
+        LoanEntity l = new LoanEntity();
+        l.setLoanType(loan);
+        l.setUser(ur.findById(id).get());
+        CurrencyValue bal = calcBalance(c, loan.getApr());
+        l.setPrincipal(c);
+        l.setBalance(bal);
+        System.out.println("setting min due...");
+        PaymentEntity p = new PaymentEntity();
+        p.calculateMinDue(l.getBalance(), l.getLoanType().getNumMonths());
+        p.setLateFee(new CurrencyValue( false, 0, 0));
+        p.setHasPaid(false);
+        LocalDateTime n = LocalDateTime.now();
+        n.plusDays(30);
+        p.setNextDueDate(n);
+        n.minusDays(60);
+        p.setPreviousDueDate(n);
+        l.setPayment(p);
+        log.trace("End LoanService.creditCheck(" + loan + ", " + id + ")");
         return l;
+    }
+
+    public CurrencyValue calcBalance(CurrencyValue c, Double apr) {
+        log.trace("Start LoanService.principalCalc(" + c + ", " + apr + ")");
+        CurrencyValue c2 = new CurrencyValue();
+        c.setNegative(false);
+        Integer p = 0;
+        double v = c.getDollars() + c.getCents();
+        double a = v * (1 + apr/100);
+        int ce = (int) (a - Math.floor(a));
+        int dol = (int) (a - (a - Math.floor(a)));
+        log.trace("End LoanService.principalCalc(" + c + ", " + apr + ")");
+        c2.add(dol, ce);
+        return c2;
     }
 }

@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/loans")
@@ -89,10 +88,15 @@ public class LoanController {
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Page<LoanEntity>> getAllLoansPage(@RequestParam String pageNum, @RequestParam String pageSize, @RequestParam String sortName, @RequestParam String sortDir, @RequestParam String search) {
-        log.trace("Start LoanController.getAllLoansPage(" + pageNum + ", " + pageSize + ", " + sortName + ", " + sortDir + ", " + search + ")");
-        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize), sortName, sortDir, search), HttpStatus.OK);
-        log.trace("End LoanController.getAllLoansPage(" + pageNum + ", " + pageSize + ", " + sortName + ", " + sortDir + ", " + search + ")");
+    public ResponseEntity<Page<LoanEntity>> getAllLoansPage(
+            @RequestParam(name = "pageNum", defaultValue = "0") int pageNum,
+            @RequestParam(name = "pageSize", defaultValue = "5") int pageSize,
+            @RequestParam(name = "sortBy", defaultValue = "id,asc") String[] sortBy,
+            @RequestParam(name = "search", defaultValue = "") String search,
+            @RequestParam(name = "userId", defaultValue = "") String userId){
+        log.info("Start LoanController.getAllLoansPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
+        ResponseEntity<Page<LoanEntity>> response = new ResponseEntity<>(ls.getAllLoansPage(pageNum, pageSize, sortBy, search), HttpStatus.OK);
+        log.trace("End LoanController.getAllLoansPage(" + pageNum + ", " + pageSize + ", " + sortBy + ", " + search + ")");
         return response;
     }
 

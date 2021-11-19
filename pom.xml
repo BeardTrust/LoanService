@@ -23,23 +23,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.springfox</groupId>-->
-<!--            <artifactId>springfox-swagger2</artifactId>-->
-<!--            <version>3.0.0</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>io.springfox</groupId>-->
-<!--            <artifactId>springfox-boot-starter</artifactId>-->
-<!--            <version>3.0.0</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>io.springfox</groupId>-->
-<!--            <artifactId>springfox-swagger-ui</artifactId>-->
-<!--            <version>3.0.0</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-atlas</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
@@ -111,6 +98,12 @@
             <artifactId>commons-validator</artifactId>
             <version>1.7</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-spring-web</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
     <dependencyManagement>

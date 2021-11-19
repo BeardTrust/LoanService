@@ -1,11 +1,10 @@
 package com.beardtrust.webapp.loanservice.entities;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
@@ -23,22 +22,26 @@ import java.util.Set;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class FinancialAsset implements Comparable<FinancialAsset>, Serializable {
-	private static final long serialVersionUID = -1059628569081235804L;
+	private static final long serialVersionUID = 8921124604099055854L;
 
 	@Id
 	private String id;
 	@ManyToOne
-	@JoinTable(name = "users")
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
+	private boolean activeStatus;
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "cents", column = @Column(name = "balanceCents")),
-			@AttributeOverride(name = "dollars", column = @Column(name = "balanceDollars")),
-			@AttributeOverride(name = "isNegative", column = @Column(name = "balanceIsNegative"))
+			@AttributeOverride(name = "isNegative", column = @Column(columnDefinition = "tinyInt default 0"))
 	})
 	private CurrencyValue balance;
-	private LocalDate createDate;
+	private LocalDateTime createDate;
+	@JsonIgnore
+	@OneToMany(mappedBy = "target")
+	private Set<FinancialTransaction> targetedTransactions;
+	@JsonIgnore
+	@OneToMany(mappedBy = "source")
+	private Set<FinancialTransaction> sourcedTransactions;
 
 
 	/**
@@ -78,6 +81,24 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 	}
 
 	/**
+	 * Is active status boolean.
+	 *
+	 * @return the boolean
+	 */
+	public boolean isActiveStatus() {
+		return activeStatus;
+	}
+
+	/**
+	 * Sets active status.
+	 *
+	 * @param activeStatus the active status
+	 */
+	public void setActiveStatus(boolean activeStatus) {
+		this.activeStatus = activeStatus;
+	}
+
+	/**
 	 * Gets balance.
 	 *
 	 * @return the balance
@@ -100,7 +121,7 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 	 *
 	 * @return the create time
 	 */
-	public LocalDate getCreateDate() {
+	public LocalDateTime getCreateDate() {
 		return createDate;
 	}
 
@@ -109,7 +130,7 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 	 *
 	 * @param createDate the create time
 	 */
-	public void setCreateDate(LocalDate createDate) {
+	public void setCreateDate(LocalDateTime createDate) {
 		this.createDate = createDate;
 	}
 
@@ -123,8 +144,11 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 		return "FinancialAsset{" +
 				"id='" + id + '\'' +
 				", user=" + user +
+				", activeStatus=" + activeStatus +
 				", balance=" + balance +
 				", createDate=" + createDate +
+				", targetedTransactions=" + targetedTransactions +
+				", sourcedTransactions=" + sourcedTransactions +
 				'}';
 	}
 }

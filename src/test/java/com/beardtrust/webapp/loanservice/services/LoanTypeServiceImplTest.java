@@ -10,8 +10,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
-import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 
@@ -22,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
