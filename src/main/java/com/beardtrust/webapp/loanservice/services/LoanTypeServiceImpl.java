@@ -3,12 +3,15 @@ package com.beardtrust.webapp.loanservice.services;
 import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
 import com.beardtrust.webapp.loanservice.entities.LoanEntity;
 import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
+import com.beardtrust.webapp.loanservice.entities.PaymentEntity;
 import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -157,7 +160,17 @@ public class LoanTypeServiceImpl implements LoanTypeService {
         l.setPrincipal(c);
         l.setBalance(bal);
         System.out.println("setting min due...");
-        l.getPayment().calculateMinDue(l.getBalance(), l.getLoanType().getNumMonths());
+        try {
+            l.getPayment().calculateMinDue(l.getBalance(), l.getLoanType().getNumMonths());
+        } catch (NullPointerException e) {
+            PaymentEntity p = new PaymentEntity();
+            p.setHasPaid(false);
+            p.setLateFee(new CurrencyValue(false, 0, 0));
+            p.setNextDueDate(LocalDateTime.now().plusDays(30));
+            p.setPreviousDueDate(LocalDateTime.now().minusDays(30));
+            l.setPayment(p);
+            l.getPayment().calculateMinDue(l.getBalance(), l.getLoanType().getNumMonths());
+        }
         log.trace("End LoanTypeService.creditCheck(" + loan + ", " + id + ")");
         return l;
     }
