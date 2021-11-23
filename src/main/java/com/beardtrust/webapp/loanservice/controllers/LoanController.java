@@ -39,7 +39,41 @@ public class LoanController {
     public LoanController(@Qualifier("loanServiceImpl") LoanService ls) {
         this.ls = ls;
     }
-    
+
+    /**
+     * This method accepts an HTTP GET request on the /loans/health
+     * endpoint and returns a String, "Healthy," and a status code of 200
+     * if healthy or a String, "Unhealthy," and a status code of 503 if
+     * not healthy.
+     *
+     * @return a ResponseEntity<String> with HttpStatus.OK
+     */
+    @PreAuthorize("permitAll()")
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        log.trace("Health check endpoint reached...");
+        String status = ls.healthCheck();
+        ResponseEntity<String> response;
+
+        if (status.equals("Healthy")) {
+            log.trace("Controller found service healthy");
+            response = new ResponseEntity<>(status, HttpStatus.OK);
+        } else {
+            log.warn("Controller found service unhealthy");
+            response = new ResponseEntity<>(status, HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        log.trace("Controller returning health status...");
+        return  response;
+    }
+    /**
+     * This method accepts an HTTP POST request on the /loans/new
+     * endpoint and returns an empty LoanEntity for the front end to
+     * build on.
+     *
+     * @param userId the user to create the loan for
+     *
+     * @return a ResponseEntity<LoanEntity> for the front end to build on.
+     */
     @PreAuthorize("permitAll()")
     @PostMapping("/new")
     public ResponseEntity<LoanEntity> getNewUUID(@RequestBody String userId) {
@@ -49,7 +83,16 @@ public class LoanController {
         log.info("Outbound entity: " + response);
         return response;
     }
-
+    /**
+     * This method accepts an HTTP POST request on the /loans/check/{userId}
+     * endpoint and returns a new LoanEntity after performing a credit check
+     * to offer the user
+     *
+     * @param userId the user to create the loan for
+     * @param l The loan type that the user wants
+     *
+     * @return a ResponseEntity<LoanEntity> tp offer the user
+     */
     @PostMapping("/check/{userId}")
     @PreAuthorize("hasAuthority('admin') or principal == #userId")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})

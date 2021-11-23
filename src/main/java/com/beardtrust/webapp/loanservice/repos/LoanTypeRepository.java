@@ -15,11 +15,11 @@ import org.springframework.data.repository.query.Param;
 public interface LoanTypeRepository extends JpaRepository<LoanTypeEntity, String> {
 
     @Modifying
-    @Query(value = "update loan_types set ACTIVESTATUS=false where id=?1", nativeQuery = true)
+    @Query(value = "update loan_types set active_status=false where id=?1", nativeQuery = true)
     void deactivateById(String id);
 
     @Override
-    @Query(value = "select * from loan_types where ACTIVESTATUS=true", nativeQuery = true)
+    @Query(value = "select * from loan_types where active_status=true", nativeQuery = true)
     Page<LoanTypeEntity> findAll(Pageable page);
 
     public Page<LoanTypeEntity> findAllBy(Pageable page);
