@@ -65,6 +65,7 @@ public class LoanController {
         log.trace("Controller returning health status...");
         return  response;
     }
+
     /**
      * This method accepts an HTTP POST request on the /loans/new
      * endpoint and returns an empty LoanEntity for the front end to
@@ -83,6 +84,7 @@ public class LoanController {
         log.info("Outbound entity: " + response);
         return response;
     }
+
     /**
      * This method accepts an HTTP POST request on the /loans/check/{userId}
      * endpoint and returns a new LoanEntity after performing a credit check
@@ -91,7 +93,7 @@ public class LoanController {
      * @param userId the user to create the loan for
      * @param l The loan type that the user wants
      *
-     * @return a ResponseEntity<LoanEntity> tp offer the user
+     * @return a ResponseEntity<LoanEntity> to offer the user
      */
     @PostMapping("/check/{userId}")
     @PreAuthorize("hasAuthority('admin') or principal == #userId")
@@ -104,6 +106,15 @@ public class LoanController {
         return response;
     }
 
+    /**
+     * This method accepts an HTTP POST request on the /loans endpoint
+     * and returns a new LoanEntity after saving the new loan.
+     *
+     * @param userId the userid for authentication
+     * @param loan The loan to save
+     *
+     * @return a ResponseEntity<LoanEntity> to offer the user
+     */
     @PostMapping()
     @PreAuthorize("hasAuthority('admin') or principal == #userId")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -115,6 +126,19 @@ public class LoanController {
 		return response;
     }
 
+    /**
+     * This method accepts an HTTP POST request on the /loans/{userId}/{id}
+     * endpoint to make a payment towards a loan and returns a
+     * CurrencyValue of any remainder after a successful payment.
+     * Tranasctionservice no longer allows for larger payments than the
+     * current balance, so this should no longer return more than 0.
+     *
+     * @param userId the user to create the loan for
+     * @param id The loan to pay on
+     * @param c The amount of the payment
+     *
+     * @return a ResponseEntity<CurrencyValue> The remaining payment
+     */
     @PreAuthorize("hasRole('admin') or principal == #userId")
     @PostMapping("/{userId}/{id}")//<-- Loan to be paid on
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -127,6 +151,21 @@ public class LoanController {
 
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loans
+     * endpoint and returns a Pageable of all loans applicable
+     * to the sorting and filtering included in the request
+     * This is an admin-level method intended to find ALL
+     * loans in the database.
+     *
+     * @param userId the user to search by
+     * @param pageNum The page number for the Pageable Object
+     * @param pageSize The page size for the Pageable Object
+     * @param search The search string for the Pageable Object
+     * @param sortBy The sort order for the Pageable Object
+     *
+     * @return a ResponseEntity<Page</LoanEntity>> The loans found by the given criteria
+     */
     @GetMapping
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -143,6 +182,14 @@ public class LoanController {
         return response;
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loans/all
+     * endpoint and returns a List of all loans applicable
+     * This is an admin-level method intended to find ALL
+     * loans in the database.
+     *
+     * @return a ResponseEntity<List</LoanEntity>> The loans found
+     */
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -153,8 +200,22 @@ public class LoanController {
         log.trace("End LoanController.getAllLoans()");
         return response;
     }
-    
-//    @PreAuthorize("permitAll()")
+
+    /**
+     * This method accepts an HTTP GET request on the /loans/me
+     * endpoint and returns a Pageable of All loans applicable
+     * to the sorting and filtering included in the request
+     * This is an user-level method intended to find ALL
+     * loans in the database owned by said user.
+     *
+     * @param userId the user requesting their loans
+     * @param pageNum The page number for the Pageable Object
+     * @param pageSize The page size for the Pageable Object
+     * @param search The search string for the Pageable Object
+     * @param sortBy The sort order for the Pageable Object
+     *
+     * @return a ResponseEntity<Page</LoanEntity>> The loans found by the given criteria
+     */
     @PreAuthorize("hasRole('admin') or principal == #userId")
     @GetMapping("/me")
     public ResponseEntity<Page<LoanEntity>> getAllMyLoansPage(// <-- User calls personal list
@@ -171,7 +232,17 @@ public class LoanController {
         return response;
 
     }
-    
+
+    /**
+     * This method accepts an HTTP PUT request on the /loans
+     * endpoint and for updating a Loan's information with
+     * the incoming information. It returns a response String indicating success or failure
+     * This is an admin-level method intended for an employee to use for customer assistance
+     *
+     * @param a The loan entity containing the updated information
+     *
+     * @return a ResponseEntity</String> Success/Failure message
+     */
     @PutMapping()
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -183,6 +254,16 @@ public class LoanController {
         return response;
     }
 
+    /**
+     * This method accepts an HTTP PUT request on the /loans/late
+     * endpoint and for checking loan's late payment status
+     * It returns a response String indicating success or failure
+     * This is an admin-level method intended for an employee to use for customer assistance
+     *
+     * @param a The loan entity containing the updated information
+     *
+     * @return a ResponseEntity</String> Success/Failure message
+     */
     @PutMapping("/late")
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -193,24 +274,38 @@ public class LoanController {
         log.trace("End LoanController.updateLoan(" + a + ")");
         return response;
     }
-    
+
+    /**
+     * This method accepts an HTTP DELETE request on the /loans/{id}
+     * endpoint and for removing a loan from the database.
+     * This is an admin-level method intended for an employee to use for customer assistance
+     *
+     * @param id The loan entity to remove
+     *
+     * @return a ResponseEntity</String> Success/Failure message
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public String deleteLoan(@PathVariable String id) {
+    public ResponseEntity<String> deleteLoan(@PathVariable String id) {
         log.trace("Start LoanController.deleteLoan(" + id + ")");
+        ResponseEntity<String> response;
         try {
-            ls.deleteById(id);
+            response = new ResponseEntity<>(ls.deleteById(id), HttpStatus.OK);
             log.trace("End LoanController.deleteLoan(" + id + ")");
-            return "Remove successfull";
+            return response;
         } catch (Exception e) {
             log.debug("Exception LoanController.deleteLoan(" + id + ")" + " \n" +
                     "     " + e);
-            return "Error finding Entity: " + e;
+            return new ResponseEntity<>("Loan not found!!!", HttpStatus.NO_CONTENT);
         }
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loans/calc
+     * endpoint and for repairing loans that lack a proper minimum due
+     */
     @GetMapping("/calc")
     @PreAuthorize("permitAll()")
     public void calculateLoan() {
