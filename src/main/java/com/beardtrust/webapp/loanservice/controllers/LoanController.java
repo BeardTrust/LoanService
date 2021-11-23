@@ -184,7 +184,7 @@ public class LoanController {
 
     /**
      * This method accepts an HTTP GET request on the /loans/all
-     * endpoint and returns a List of all loans applicable
+     * endpoint and returns a List of all loans
      * This is an admin-level method intended to find ALL
      * loans in the database.
      *
