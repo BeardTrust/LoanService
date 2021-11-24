@@ -67,7 +67,9 @@ public class LoanServiceImpl implements LoanService {
     }
     /**
      Returns a new loan for creation between the front end
+
      @param userId the user that owns the loan
+
      @return LoanEntity the user's new loan being returned.
 
      */
@@ -87,6 +89,7 @@ public class LoanServiceImpl implements LoanService {
      @param s the page size for the Pageable object
      @param sortBy the array containing sort orders for the Pageable object
      @param search the String used for filtering the Pageable object
+
      @return Page</LoanEntity> the user's loans being returned.
 
      */
@@ -135,6 +138,7 @@ public class LoanServiceImpl implements LoanService {
     /**
      *
       Returns all Loans as a list
+
      @return List</LoanEntity> The list of loans
      */
     public List<LoanEntity> getAllLoans() {
@@ -143,7 +147,9 @@ public class LoanServiceImpl implements LoanService {
     }
     /**
      Gets a loan by its Id
+
      @param loanId The loan to be retrieved
+
      @return LoanEntity The loan found by the Id
      */
     @Override
@@ -154,7 +160,9 @@ public class LoanServiceImpl implements LoanService {
     /**
      Deletes a loan by its Id. This is a true removal from the database and should be avoided,
      unless the loan is backed up in the NOSQLDB
+
      @param loanId The loan to be deleted
+
      @return String the message indicating success or failure
      */
     public String deleteById(String loanId) {
@@ -171,7 +179,9 @@ public class LoanServiceImpl implements LoanService {
     }
     /**
      Saves a loan to the database
+
      @param l The loan to be saved
+
      @return LoanEntity the loan saved
      */
     public LoanEntity save(LoanEntity l) {
@@ -188,7 +198,9 @@ public class LoanServiceImpl implements LoanService {
     }
     /**
      Overwrites an existing loan with new data
+
      @param l the loan to update
+
      @return String the message indicating success or failure
      */
     @Override
@@ -209,7 +221,7 @@ public class LoanServiceImpl implements LoanService {
         }
     }
     /**
-     This processes the fees of every loan in BeardTrust. I will check to see if the minimum due date has been reached,
+     This processes the fees of every loan in BeardTrust. It will check to see if the minimum due date has been reached,
      increment the minimum due amount,
      add a late fee when required,
      and increment the date.
@@ -255,6 +267,7 @@ public class LoanServiceImpl implements LoanService {
      @param sortBy the array containing sort orders for the Pageable object
      @param search the String used for filtering the Pageable object
      @param userId the user to filter by
+
      @return Page</LoanEntity> the user's loans being returned.
 
      */
@@ -308,6 +321,7 @@ public class LoanServiceImpl implements LoanService {
 
      @param c the payment amount
      @param id the id of the loan being paid on
+
      @return CurrencyValue any leftover money (depracated, transactions no longer allow payments above the loan balance.)
 
      */
@@ -357,10 +371,12 @@ public class LoanServiceImpl implements LoanService {
             repo.save(l1);
         }
     }
+
 /**
  This accepts the sort direction in the form of a string and converts it to a proper Sort.Direction for use with parseOrders()
 
  @param direction the sort direction, in the form of a String
+
  @return Sort.Direction the properly parsed direction
  * */
     private Sort.Direction getSortDirection(String direction) {
@@ -377,6 +393,7 @@ public class LoanServiceImpl implements LoanService {
  This allows for multiple fields to be sorted by at once It works in tandem with getSortDirection() to ensure proper oders
 
  @param sortBy the array containing the order(s)
+
  @return List</Sort.Order> The orders to put into a Pageable
  * */
     private List<Sort.Order> parseOrders(String[] sortBy) {
@@ -502,6 +519,7 @@ public class LoanServiceImpl implements LoanService {
         log.trace("End LoanService.creditCheck(" + loan + ", " + id + ")");
         return l;
     }
+
     /**
      Calculates the balance the user will have to pay back. multiplies the loan amount by the APR
 
@@ -509,7 +527,7 @@ public class LoanServiceImpl implements LoanService {
      @param apr The interest rate a user has to pay back.
 
      @return CurrencyValue The resulting balance
-     * */
+     **/
     public CurrencyValue calcBalance(CurrencyValue c, Double apr) {
         log.trace("Start LoanService.principalCalc(" + c + ", " + apr + ")");
         CurrencyValue c2 = new CurrencyValue();
