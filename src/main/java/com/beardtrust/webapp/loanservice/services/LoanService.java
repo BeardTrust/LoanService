@@ -34,4 +34,6 @@ public interface LoanService {
     public String lateFeeCheck(LoanEntity l);
 
     public LoanEntity creditCheck(String userId, LoanTypeEntity l);
+
+    public String healthCheck();
 }

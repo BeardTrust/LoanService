@@ -33,6 +33,13 @@ public class LoanTypeController {
         this.loanTypeService = loanTypeService;
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loantypess/new
+     * endpoint and returns an empty LoanTypeEntity for the front end to
+     * build on.
+     *
+     * @return a ResponseEntity<LoanTypeEntity> for the front end to build on.
+     */
     @PreAuthorize("permitAll()")
     @GetMapping("/new")
     public ResponseEntity<LoanTypeEntity> getNewUUID() {
@@ -42,6 +49,12 @@ public class LoanTypeController {
         return response;
     }
 
+    /**
+     * This method accepts an HTTP POST request on the /loantypess
+     * endpoint for adding a new loanType to the database
+     *
+     * @param loanType The entity to save to the database
+     */
     @PostMapping()
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -52,6 +65,16 @@ public class LoanTypeController {
         log.trace("End LoanTypeController.createLoanType(" + loanType + ")");
     }
 
+    /**
+     * This method accepts an HTTP POST request on the /loantypes/{id}
+     * endpoint and returns a new LoanEntity after performing a credit check
+     * to offer the user
+     *
+     * @param id the user to create the loan for
+     * @param loan The loan type that the user wants
+     *
+     * @return a ResponseEntity<LoanEntity> to offer the user
+     */
     @PostMapping("/{id}")
     @PreAuthorize("permitAll()")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -63,6 +86,21 @@ public class LoanTypeController {
         return response;
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loantypes
+     * endpoint and returns a Pageable of all loan types applicable
+     * to the sorting and filtering included in the request
+     * This is an user-level method intended to find ALL
+     * loan types in the database.
+     *
+     * @param userId the user to search by
+     * @param pageNumber The page number for the Pageable Object
+     * @param pageSize The page size for the Pageable Object
+     * @param search The search string for the Pageable Object
+     * @param sortBy The sort order for the Pageable Object
+     *
+     * @return a ResponseEntity<Page</LoanTypeEntity>> The loan types found by the given criteria
+     */
     @GetMapping
     @PreAuthorize("permitAll()")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -81,6 +119,14 @@ public class LoanTypeController {
 
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loantypes/all
+     * endpoint and returns a List of all loan types
+     * This is an admin-level method intended to find ALL
+     * loan types in the database.
+     *
+     * @return a ResponseEntity<List</LoanTypeEntity>> The loan types found
+     */
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -90,6 +136,14 @@ public class LoanTypeController {
         return loanTypeService.getAll();
     }
 
+    /**
+     * This method accepts an HTTP GET request on the /loantypes/{id}
+     * endpoint and returns an individual loan type based on the given id
+     *
+     * @param id the loan type requested
+     *
+     * @return a ResponseEntity</LoanEntity> The loan type found
+     */
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -101,6 +155,12 @@ public class LoanTypeController {
         return response;
     }
 
+    /**
+     * This method accepts an HTTP PUT request on the /loantypes
+     * endpoint for updating an individual loan type
+     *
+     * @param loanType the loan type to update
+     */
     @PutMapping()
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -111,6 +171,13 @@ public class LoanTypeController {
         log.trace("End LoanTypeController.updateLoanType(" + loanType + ")");
     }
 
+    /**
+     * This method accepts an HTTP DELETE request on the /loantypes/{id}
+     * endpoint and deactivates the individual loan type given
+     * this is an admin-level method intended for database management purposes
+     *
+     * @param id the loan type requested
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})

@@ -118,6 +118,11 @@ public class PaymentEntity implements Serializable {
 		} else if (nextDueDate.isAfter(l) && hasPaid) {
 			incrementDueDate();
 		}
+		if (getLateFee().isNegative()) {
+			getLateFee().setNegative(false);
+			getLateFee().setDollars(0);
+			getLateFee().setCents(0);
+		}
 		return returnValue;
 	}
 
@@ -132,15 +137,12 @@ public class PaymentEntity implements Serializable {
 				+ "\npaid status: " + this.isHasPaid();
 	}
 
-    public void calculateMinDue(CurrencyValue b, int months) {
-		System.out.println("parsing balance: " + b.toString());
+    public CurrencyValue calculateMinDue(CurrencyValue b, int months) {
 		Double temp = (double) b.getDollars() + (double) (b.getCents() / 100);
 		temp /= months;
-		System.out.println("min due temp value set: " + (int) Math.ceil(temp));
-		System.out.println("min due temp value parsed: " + CurrencyValue.valueOf(temp));
 		this.setMinDue(CurrencyValue.valueOf(temp));
 		minMonthFee = minDue.toString();
 		setMinMonthFee(minMonthFee);
-
+	return minDue;
     }
 }

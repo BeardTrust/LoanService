@@ -1,10 +1,7 @@
 package com.beardtrust.webapp.loanservice.services;
 
-import com.beardtrust.webapp.loanservice.entities.CurrencyValue;
-import com.beardtrust.webapp.loanservice.entities.LoanEntity;
-import com.beardtrust.webapp.loanservice.entities.LoanTypeEntity;
-import com.beardtrust.webapp.loanservice.entities.PaymentEntity;
-import com.beardtrust.webapp.loanservice.repos.LoanRepository;
+import com.beardtrust.webapp.loanservice.entities.*;
+import com.beardtrust.webapp.loanservice.repos.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,8 +10,6 @@ import java.util.ArrayList;
 import static org.apache.commons.lang.NumberUtils.isNumber;
 
 import lombok.extern.slf4j.Slf4j;
-import com.beardtrust.webapp.loanservice.repos.LoanTypeRepository;
-import com.beardtrust.webapp.loanservice.repos.UserRepository;
 import org.apache.commons.validator.GenericValidator;
 import org.hibernate.type.LocalDateTimeType;
 import org.springframework.data.domain.*;
@@ -31,20 +26,73 @@ public class LoanServiceImpl implements LoanService {
     private final LoanRepository repo;
     private final LoanTypeRepository ltr;
     private final UserRepository ur;
+    private final AccountRepository ar;
+    private final CardRepository cr;
+    private final FinancialAssetRepository far;
 
-    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr, UserRepository ur) {
+    public LoanServiceImpl(LoanRepository repo, LoanTypeRepository ltr, UserRepository ur,
+                           AccountRepository ar, CardRepository cr, FinancialAssetRepository far) {
         this.repo = repo;
         this.ltr = ltr;
         this.ur = ur;
+        this.ar = ar;
+        this.cr = cr;
+        this.far = far;
     }
+    /**
+     A simple health check that ensures all repos can be accessed without issue;
 
+     @return String A message indicating the health status of the service.
+     * */
+    public String healthCheck() {
+        StringBuilder healthStatus = new StringBuilder();
+        Pageable page = PageRequest.of(0, 5);
+
+        try {
+            Page<LoanEntity> loans = repo.findAll(page);
+            Page<LoanTypeEntity> types = ltr.findAll(page);
+            Page<UserEntity> users = ur.findAll(page);
+            Page<AccountEntity> accounts = ar.findAll(page);
+            Page<CardEntity> cards = cr.findAll(page);
+            Page<FinancialAsset> assets = far.findAll(page);
+            log.info("Health check completed with healthy status.");
+            processFees();
+            healthStatus.append("Healthy");
+        } catch(Exception e) {
+            log.debug("Health check failed wih error: " + e.getMessage());
+            healthStatus.append("Unhealthy");
+        }
+
+        return healthStatus.toString();
+    }
+    /**
+     Returns a new loan for creation between the front end
+
+     @param userId the user that owns the loan
+
+     @return LoanEntity the user's new loan being returned.
+
+     */
     public LoanEntity getNewLoan(String userId) {
+        log.trace("LoanService getNewLoan...");
         LoanEntity l = new LoanEntity();
-//        log.info("userId received for credit check: " + userId);
         l.setUser(ur.findById(userId).get());
+        log.debug("New loan created: " + l);
+        log.trace("Loanservice End getNewLoan");
         return l;
     }
 
+    /**
+     Gets all loans as a Pageable object that sorts and filters based on params passed in.
+
+     @param n the page number for the Pageable object
+     @param s the page size for the Pageable object
+     @param sortBy the array containing sort orders for the Pageable object
+     @param search the String used for filtering the Pageable object
+
+     @return Page</LoanEntity> the user's loans being returned.
+
+     */
     @Override
     public Page<LoanEntity> getAllLoansPage(int n, int s, String[] sortBy, String search) {
         log.trace("Start LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
@@ -87,27 +135,36 @@ public class LoanServiceImpl implements LoanService {
         log.trace("End LoanService.getAllLoansPage(" + n + ", " + s + ", " + sortBy +  ", " + search + ")");
         return repo.findAll(page);
     }
+    /**
+     *
+      Returns all Loans as a list
 
+     @return List</LoanEntity> The list of loans
+     */
     public List<LoanEntity> getAllLoans() {
         log.trace("Start LoanService.getAllLoans()");
         return repo.findAll();
     }
+    /**
+     Gets a loan by its Id
 
-    public Sort.Direction getDirection(String dir) {
-        log.trace("Start LoanService.getDirection(" + dir + ")");
-        if ("asc".equals(dir)) {
-            return Sort.Direction.ASC;
-        } else {
-            return Sort.Direction.DESC;
-        }
-    }
+     @param loanId The loan to be retrieved
 
+     @return LoanEntity The loan found by the Id
+     */
     @Override
     public LoanEntity getById(String loanId) {
         log.trace("Start LoanService.getById(" + loanId + ")");
         return repo.findById(loanId).get();
     }
+    /**
+     Deletes a loan by its Id. This is a true removal from the database and should be avoided,
+     unless the loan is backed up in the NOSQLDB
 
+     @param loanId The loan to be deleted
+
+     @return String the message indicating success or failure
+     */
     public String deleteById(String loanId) {
         log.trace("Start LoanService.deleteById(" + loanId + ")");
         try {
@@ -120,7 +177,13 @@ public class LoanServiceImpl implements LoanService {
             return "Failed to delete: " + e;
         }
     }
+    /**
+     Saves a loan to the database
 
+     @param l The loan to be saved
+
+     @return LoanEntity the loan saved
+     */
     public LoanEntity save(LoanEntity l) {
         log.info("Start LoanService.LoanEntity(" + l + ")");
         try {
@@ -133,7 +196,13 @@ public class LoanServiceImpl implements LoanService {
         log.trace("End LoanService.LoanEntity(" + l + ")");
         return l;
     }
+    /**
+     Overwrites an existing loan with new data
 
+     @param l the loan to update
+
+     @return String the message indicating success or failure
+     */
     @Override
     public String updateLoan(LoanEntity l) {
         log.trace("Start LoanService.updateLoan(" + l + ")");
@@ -151,42 +220,57 @@ public class LoanServiceImpl implements LoanService {
             return "Update Failed";
         }
     }
+    /**
+     This processes the fees of every loan in BeardTrust. It will check to see if the minimum due date has been reached,
+     increment the minimum due amount,
+     add a late fee when required,
+     and increment the date.
+     This is a part of the health check process.
+     */
+    public void processFees() {
+        log.trace("Processing loan fees");
+        List<LoanEntity> loans = repo.findAll();
+        //set any late fees
+        for (LoanEntity loan : loans) {
+            if (loan.getPayment().getNextDueDate() == LocalDateTime.now()) {
+                //loan pay date has passed, increment minimum due
 
-    public String lateFeeCheck(LoanEntity l) {
-        log.trace("Checking late fee...");
-//        if (l.checkDate()) {
-//            log.trace("late fee applied to loan past due...");
-////            System.out.println("late fee added: " + l.getLateFee());
-////            repo.save(l);
-//            log.trace("Returning from late fee check...");
-//            return "Late fee applied";
-//        } else {
-//            log.trace("loan not past due, no late fee applied...");
-////            l.checkDate();
-//            log.trace("Returning from late fee check...");
-//            return "No late fee applied";
-//        }
-        return null;
-    }
+                //First, get the current minimum due
+                CurrencyValue c = loan.getPayment().getMinDue();
 
-    private CurrencyValue parseCurrency(String searchCriteria) {
-        log.trace("Start loanService.parseCurrency(" + searchCriteria + ")");
-        String[] values = searchCriteria.split(",");
-        CurrencyValue searchBalance = null;
+                //second, add the normal min due
+                c.add(loan.getPayment().calculateMinDue(loan.getPrincipal(), loan.getLoanType().getNumMonths()));
 
-        if (values.length == 2) {
-            searchBalance = new CurrencyValue(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
-        } else {
-            if (Integer.parseInt(values[0]) > 99) {
-                searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
-            } else {
-                searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
+                //third, set the new minimum due
+                loan.getPayment().setMinDue(c);
+
+                //fourth, check for a late fee.
+                loan.getPayment().checkLate();
+
+                //fifth, subtract a payment month
+                loan.getLoanType().setNumMonths(loan.getLoanType().getNumMonths() - 1);
+
+                //finally, increment the due date
+                loan.getPayment().incrementDueDate();
+
+                //Done, save our work...
+                repo.save(loan);
+
+                }
             }
         }
-        log.trace("End loanService.parseCurrency(" + searchCriteria + ")");
-        return searchBalance;
-    }
+    /**
+     Gets all of a user's loans as a Pageable object that sorts and filters based on params passed in.
 
+     @param n the page number for the Pageable object
+     @param s the page size for the Pageable object
+     @param sortBy the array containing sort orders for the Pageable object
+     @param search the String used for filtering the Pageable object
+     @param userId the user to filter by
+
+     @return Page</LoanEntity> the user's loans being returned.
+
+     */
     public Page<LoanEntity> getAllMyLoansPage(int n, int s, String[] sortBy, String search, String userId) {
         log.trace("Start loanService.getAllMyLoansPage(" + n + ", " + s + ", " + sortBy + ", " + search + ")");
         List<Sort.Order> orders = parseOrders(sortBy);
@@ -227,13 +311,18 @@ public class LoanServiceImpl implements LoanService {
         return repo.findByUser_UserId(userId, page);
     }
 
-    /*
+    /**
 
     Receives a CurrencyValue and String representing the value to be paid towards the loan of id.
     Late fees will automatically take out a cut, any resulting amount will go towards
     the minimum due. If the minimum die is cleared, the hasPaid status will be set to true.
     If the amount paid is more than amount owed, the remaining amount will be returned to the
     payment source
+
+     @param c the payment amount
+     @param id the id of the loan being paid on
+
+     @return CurrencyValue any leftover money (depracated, transactions no longer allow payments above the loan balance.)
 
      */
     public CurrencyValue makePayment(CurrencyValue c, String id) {
@@ -248,23 +337,48 @@ public class LoanServiceImpl implements LoanService {
                 l.getPayment().getMinDue().setCents(0);
             }
             repo.save(l);
-            repo.save(l);
             return returnValue;
         } catch (Exception e) {
-            log.warn("Psyment process failed!!!");
+            log.warn("Payment process failed!!!");
             return null;
         }
     }
+    /**
+     Checks the late fee of an individual loan
 
+     @param l The loan to check
+
+     @return String the message indicating if a fee was applied
+     */
+    @Override
+    public String lateFeeCheck(LoanEntity l) {
+        if (l.getPayment().checkLate()) {
+            return "Late fee applied.";
+        }
+        else {
+            return "No late fee applied";
+        }
+    }
+
+    /**
+     This will iterate through every loan and ensure the minimum due is correctly set
+     * */
     public void calculateMinDue() {
         List<LoanEntity> l = repo.findAll();
         for (int i = 0; i < l.size(); i++) {
             LoanEntity l1 = l.get(i);
-//            l1.calculateMinDue();
+            l1.getPayment().calculateMinDue(l1.getBalance(), l1.getLoanType().getNumMonths());
             repo.save(l1);
         }
     }
 
+/**
+ This accepts the sort direction in the form of a string and converts it to a proper Sort.Direction for use with parseOrders()
+
+ @param direction the sort direction, in the form of a String
+
+ @return Sort.Direction the properly parsed direction
+ * */
     private Sort.Direction getSortDirection(String direction) {
         if (direction.equals("asc")) {
             return Sort.Direction.ASC;
@@ -274,7 +388,14 @@ public class LoanServiceImpl implements LoanService {
 
         return Sort.Direction.ASC;
     }
+/**
+ Sorting orders are sent in an array to be broken down and pieced back together into a Pageable Sort.Order list
+ This allows for multiple fields to be sorted by at once It works in tandem with getSortDirection() to ensure proper oders
 
+ @param sortBy the array containing the order(s)
+
+ @return List</Sort.Order> The orders to put into a Pageable
+ * */
     private List<Sort.Order> parseOrders(String[] sortBy) {
         List<Sort.Order> orders = new ArrayList<>();
 
@@ -288,37 +409,47 @@ public class LoanServiceImpl implements LoanService {
         } else {
             orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
         }
-        System.out.println("full orders: " + orders);
         return orders;
     }
 
-    /*
+    /**
+     *
     Receives a CurrencyValue object representing the value to be paid towards the loan.
     Late fees will automatically take out a cut, any resulting amount will go towards
     the minimum due. If the minimum die is cleared, the hasPaid status will be set to true.
     If the amount paid is more than amount owed, the remaining amount will be returned to the
     payment source
+     @param payment The amount being paid
+     @param l The loan being paid on
+
+     @return CurrencyValue the amount paid (not really used for anything)
 
      */
     public CurrencyValue processPayment(CurrencyValue payment, LoanEntity l) {
+        log.trace("process payment service reached...");
+        log.debug("Payment received: " + payment + ". Loan received: " + l.toString());
         l.getPayment().getMinDue().setNegative(false);
-        CurrencyValue temp;
-        System.out.println("Incoming payment: " + payment.toString());
+        CurrencyValue temp = new CurrencyValue(l.getPayment().getLateFee());
         if (l.getPayment().getLateFee().getDollars() > 0 || l.getPayment().getLateFee().getCents() > 0) {
-            System.out.println("latefee to pay on: " + l.getPayment().getLateFee());
-            temp = l.getPayment().getLateFee();
+            log.trace("Loan had a late fee to pay on...");
+            log.debug("Late fee found: " + l.getPayment().getLateFee().toString());
             l.getPayment().getLateFee().add(payment);
+            System.out.println("temp value: " + temp);
             payment.add(temp);
+            if (l.getPayment().getLateFee().isNegative()) {
+                l.getPayment().getLateFee().setDollars(0);
+                l.getPayment().getLateFee().setCents(0);
+                l.getPayment().getLateFee().setNegative(false);
+            }
             System.out.println("payment after late fee: " + payment);
         }
         payment.setNegative(false);
-        if (payment.compareTo(l.getBalance()) == 1) {//paynment is greater
+        if (payment.compareTo(l.getBalance()) == 1) {//paynment is greater (transactionservice shouldn't allow this)
+            log.trace("Payment was greater than the present balance...");
+            log.debug("Payment received: " + payment + ". Loan balance: " + l.getBalance().toString());
             payment.setNegative(true);
-            System.out.println("paying more than balance..." + payment);
-            System.out.println("balance: " + l.getBalance());
             l.getPayment().getMinDue().add(payment);
             l.getBalance().add(payment);
-            System.out.println("balance added to payment: " + l.getBalance());
             payment.setDollars(l.getBalance().getDollars());
             payment.setCents(l.getBalance().getCents());
             payment.setNegative(false);
@@ -328,9 +459,9 @@ public class LoanServiceImpl implements LoanService {
             l.getPayment().getMinDue().setDollars(0);
             l.getPayment().getMinDue().setCents(0);
             payment.setNegative(false);
-            System.out.println("resulting balance: " + l.getBalance());
-            System.out.println("remaining payment: " + payment);
             l.getPayment().setHasPaid(true);
+            log.trace("Returning payment from payment processor...");
+            log.debug("Payment to return: " + payment);
             return payment;
         } else {
             payment.setNegative(true);
@@ -347,11 +478,22 @@ public class LoanServiceImpl implements LoanService {
             l.getPayment().getMinDue().setCents(0);
             l.getPayment().getMinDue().setNegative(false);
             l.getPayment().setHasPaid(true);
-//            l.getPayment().checkDate();
         }
-        System.out.println("Loan haspaid status: " + l.getPayment().isHasPaid());
+        l.getPayment().checkLate();
+        log.trace("Returning payment from payment processor...");
+        log.debug("Payment to return: " + payment);
         return payment;
     }
+    /**
+     This method is used to run a credit check and determine your credit score for purposes of determining how much
+     of a loan to offer. It currently has no external API calls to make, so it defaults to $1000
+
+     @param id The user the loan will be offered to
+     @param loan The type of loan the user is applying for
+
+     @return LoanEntity The loan once the credit score has been checked
+
+     */
     public LoanEntity creditCheck(String id, LoanTypeEntity loan) {
         log.info("Start LoanService.creditCheck(" + loan + ", " + id + ")");
         CurrencyValue c = new CurrencyValue();
@@ -378,6 +520,14 @@ public class LoanServiceImpl implements LoanService {
         return l;
     }
 
+    /**
+     Calculates the balance the user will have to pay back. multiplies the loan amount by the APR
+
+     @param c The initial principal to base the balance on
+     @param apr The interest rate a user has to pay back.
+
+     @return CurrencyValue The resulting balance
+     **/
     public CurrencyValue calcBalance(CurrencyValue c, Double apr) {
         log.trace("Start LoanService.principalCalc(" + c + ", " + apr + ")");
         CurrencyValue c2 = new CurrencyValue();
